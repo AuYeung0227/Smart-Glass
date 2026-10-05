@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python decode.py audio3_packets.txt)"
+    ]
+  }
+}

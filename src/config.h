@@ -2,9 +2,8 @@
 #define CONFIG_H
 
 // =============================================================================
-// BOARD CONFIGURATION - Must be defined before camera includes
+// BOARD CONFIGURATION
 // =============================================================================
-#define CAMERA_MODEL_XIAO_ESP32S3 // Define camera model for Seeed Xiao ESP32S3
 #define BOARD_HAS_PSRAM           // Enable PSRAM support
 #define CONFIG_ARDUHAL_ESP_LOG    // Enable Arduino HAL logging
 
@@ -42,42 +41,9 @@
 #define BATTERY_ADC_PIN 2                // GPIO2 (A1) - voltage divider connection
 
 // =============================================================================
-// CAMERA CONFIGURATION - Power optimized for 6-8 hour battery life
-// =============================================================================
-#define CAMERA_FRAME_SIZE FRAMESIZE_VGA // 640x480 - optimal balance
-#define CAMERA_JPEG_QUALITY 25          // Slightly higher quality for better compression efficiency
-#define CAMERA_XCLK_FREQ 6000000        // 6MHz - reduced from 8MHz for power savings
-#define CAMERA_FB_IN_PSRAM CAMERA_FB_IN_PSRAM
-#define CAMERA_GRAB_LATEST CAMERA_GRAB_LATEST
-
-// Fixed Photo Capture Interval - Optimized for 6-8 hour operation
-#define PHOTO_CAPTURE_INTERVAL_MS 30000 // Fixed 30 second interval
-#define CAMERA_TASK_INTERVAL_MS 2000    // 2 second task check
-#define CAMERA_TASK_STACK_SIZE 3072     // Reduced stack size
-#define CAMERA_TASK_PRIORITY 2
-
-// Camera Power Management - Reduce power cycling
-#define CAMERA_POWER_DOWN_DELAY_MS 60000 // Power down camera after 60s idle (was 8s)
-
-// =============================================================================
-// IMAGE ORIENTATION
-// =============================================================================
-typedef enum {
-    ORIENTATION_0_DEGREES = 0,   // Normal
-    ORIENTATION_90_DEGREES = 1,  // Rotated right
-    ORIENTATION_180_DEGREES = 2, // Upside down
-    ORIENTATION_270_DEGREES = 3  // Rotated left
-} image_orientation_t;
-
-// The device is mounted upside down, so we need to rotate 180 degrees.
-#define FIXED_IMAGE_ORIENTATION ORIENTATION_180_DEGREES
-
-// =============================================================================
 // BLE CONFIGURATION - Power optimized for extended battery life
 // =============================================================================
 #define BLE_MTU_SIZE 517            // Maximum MTU for efficiency
-#define BLE_CHUNK_SIZE 500          // Safe chunk size for photo transfer
-#define BLE_PHOTO_TRANSFER_DELAY 3  // Fast transfer for connection stability
 #define BLE_TX_POWER ESP_PWR_LVL_N0 // Low power for 6+ hour battery life
 
 // Power-optimized BLE Advertising - Longer intervals for power savings
@@ -102,7 +68,7 @@ typedef enum {
 // POWER STATES
 // =============================================================================
 typedef enum {
-    POWER_STATE_ACTIVE,      // Normal operation - camera + BLE active
+    POWER_STATE_ACTIVE,      // Normal operation - BLE active
     POWER_STATE_POWER_SAVE,  // Reduced frequency, longer intervals
     POWER_STATE_LOW_BATTERY, // Minimal operation
     POWER_STATE_SLEEP        // Deep sleep mode
@@ -128,7 +94,7 @@ typedef enum {
 
 #define MIC_SAMPLE_RATE 16000          // 16kHz sample rate
 #define MIC_BUFFER_SAMPLES 1600        // 100ms buffer (16000 * 0.1)
-#define MIC_GAIN 2                     // Microphone gain multiplier
+#define MIC_GAIN 8                     // Microphone gain multiplier
 #define AUDIO_RING_BUFFER_SAMPLES 8000 // 500ms of audio data
 
 // =============================================================================
@@ -151,8 +117,6 @@ typedef enum {
 #define OMI_SERVICE_UUID "19B10000-E8F2-537E-4F6C-D104768A1214"
 #define AUDIO_DATA_UUID "19B10001-E8F2-537E-4F6C-D104768A1214"
 #define AUDIO_CODEC_UUID "19B10002-E8F2-537E-4F6C-D104768A1214"
-#define PHOTO_DATA_UUID "19B10005-E8F2-537E-4F6C-D104768A1214"
-#define PHOTO_CONTROL_UUID "19B10006-E8F2-537E-4F6C-D104768A1214"
 
 // Battery Service UUID - Cast to uint16_t for BLE compatibility
 #define BATTERY_SERVICE_UUID (uint16_t) 0x180F
@@ -191,30 +155,11 @@ typedef enum {
 #define OTA_MAX_URL_LEN 256
 
 // =============================================================================
-// PIN DEFINITIONS (from camera_pins.h integration)
+// PIN DEFINITIONS
 // =============================================================================
-#ifdef CAMERA_MODEL_XIAO_ESP32S3
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 10
-#define SIOD_GPIO_NUM 40
-#define SIOC_GPIO_NUM 39
-#define Y9_GPIO_NUM 48
-#define Y8_GPIO_NUM 11
-#define Y7_GPIO_NUM 12
-#define Y6_GPIO_NUM 14
-#define Y5_GPIO_NUM 16
-#define Y4_GPIO_NUM 18
-#define Y3_GPIO_NUM 17
-#define Y2_GPIO_NUM 15
-#define VSYNC_GPIO_NUM 38
-#define HREF_GPIO_NUM 47
-#define PCLK_GPIO_NUM 13
-
 // Power Button and LED Control
 #define POWER_BUTTON_PIN 1 // Custom button (GPIO1/A0) - power on/off
 #define STATUS_LED_PIN 21  // User LED (GPIO21) - status indicator
-#endif
 
 // =============================================================================
 // POWER BUTTON & LED CONFIGURATION
@@ -228,7 +173,6 @@ typedef enum {
 #define LED_BOOT_BLINK_FAST 200     // Fast blink during boot
 #define LED_BATTERY_LOW_BLINK 1000  // Slow blink for low battery
 #define LED_SLEEP_BLINK 5000        // Very slow blink in deep sleep mode
-#define LED_PHOTO_CAPTURE_FLASH 100 // Quick flash during photo capture
 
 // Deep Sleep Configuration
 #define DEEP_SLEEP_BUTTON_WAKEUP 1    // Enable button wake-up from deep sleep
@@ -244,7 +188,6 @@ typedef enum {
     LED_BOOT_SEQUENCE,
     LED_NORMAL_OPERATION,
     LED_LOW_BATTERY,
-    LED_PHOTO_CAPTURE,
     LED_POWER_OFF_SEQUENCE,
     LED_SLEEP_MODE
 } led_status_t;
