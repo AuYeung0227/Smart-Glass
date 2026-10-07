@@ -10,6 +10,8 @@
 // Static variables
 static volatile bool mic_running = false;
 static mic_data_handler audio_callback = nullptr;
+static mic_data_handler analysis_callback = nullptr;
+static mic_data_handler recording_callback = nullptr;
 static int16_t *i2s_read_buffer = nullptr;
 
 bool mic_start()
@@ -111,6 +113,16 @@ void mic_set_callback(mic_data_handler callback)
     audio_callback = callback;
 }
 
+void mic_set_analysis_callback(mic_data_handler callback)
+{
+    analysis_callback = callback;
+}
+
+void mic_set_recording_callback(mic_data_handler callback)
+{
+    recording_callback = callback;
+}
+
 // 自适应去尖峰：滑动基线(EMA)决定阈值，超阈值的连续尖刺段用前后正常样本线性插值填补
 // 三个改进：差分跳变检测(DIFF)、最大宽度限制(MAX_SPIKE_SAMPLES)、更快 EMA(EMA_SHIFT)
 static void despike(int16_t *buf, size_t n)
@@ -193,6 +205,112 @@ static void highpass(int16_t *buf, size_t n)
     }
 }
 
+// 三点中值滤波：用窗口内三个样本的中值替换当前样本。
+// 对「孤立的单样本脉冲」（PDM/电源尖刺）能直接剔除——尖点夹在两个正常样本之间，
+// 取中值后消失；对「连续语音」则安全——连续波形取中值仍是语音，不会像 despike
+// 的线性插值那样把辅音整段抹平。这是脉冲（椒盐）噪声的标准处理方法。
+static int16_t median3_v(int16_t a, int16_t b, int16_t c)
+{
+    int16_t mn = a, mx = a;
+    if (b < mn) mn = b;
+    if (b > mx) mx = b;
+    if (c < mn) mn = c;
+    if (c > mx) mx = c;
+    // 中值 = 三数之和 - 最大 - 最小（用 int32 求和，避免三个 int16 相加溢出）
+    return (int16_t)((int32_t)a + (int32_t)b + (int32_t)c - (int32_t)mn - (int32_t)mx);
+}
+
+static void median_filter3(int16_t *buf, size_t n)
+{
+    if (n < 3) return;
+
+    int16_t orig_prev = buf[0];
+    for (size_t i = 0; i < n; i++) {
+        int16_t cur = buf[i];
+        int16_t left  = (i > 0) ? orig_prev : cur;       // 左侧用原始值
+        int16_t right = (i + 1 < n) ? buf[i + 1] : cur;  // 右侧尚未处理，也是原始值
+        int16_t m = median3_v(left, cur, right);
+        orig_prev = cur;  // 保存原始当前值作为下一点的 left（原地写回不污染计算）
+        buf[i] = m;
+    }
+}
+
+// 软限幅增益：线性区保持 MIC_GAIN 不变，仅对接近满量程的瞬态峰值平滑压缩，
+// 消除硬钳位的削波失真。
+static int16_t apply_gain_soft(int16_t x)
+{
+    float g = (float)x * (float)MIC_GAIN / 32768.0f;  // 增益后归一化幅度
+    float a = (g < 0.0f) ? -g : g;
+
+    const float T0 = 0.80f;  // 线性区上限：以下严格保持增益
+    const float T1 = 1.20f;  // 软封顶起点
+    const float S  = 0.99f;  // 饱和顶
+    float y;
+    if (a <= T0) {
+        y = g;                                       // 纯线性，音量不变
+    } else {
+        float t = (a - T0) / (T1 - T0);
+        if (t > 1.0f) t = 1.0f;
+        float w = t * t * (3.0f - 2.0f * t);         // smoothstep 平滑权重
+        float v = (1.0f - w) * a + w * S;            // 线性值与饱和顶平滑混合
+        y = (g < 0.0f) ? -v : v;
+    }
+
+    int32_t out = (int32_t)(y * 32768.0f);
+    if (out > 32767) out = 32767;
+    if (out < -32768) out = -32768;
+    return (int16_t)out;
+}
+
+// 三点取中值（中值=三数和-最大-最小；int32 求和防 int16 溢出）
+static int16_t declick_median3(int16_t a, int16_t b, int16_t c)
+{
+    int32_t mn = a, mx = a;
+    if (b < mn) mn = b;
+    if (b > mx) mx = b;
+    if (c < mn) mn = c;
+    if (c > mx) mx = c;
+    return (int16_t)((int32_t)a + (int32_t)b + (int32_t)c - mn - mx);
+}
+
+// 门控去脉冲：用非对称 EMA 维护一个对脉冲免疫的背景电平（上升慢、下降快），
+// 仅在背景电平低（停顿/静音）时用三点中值剔除孤立咔哒声；持续语音时背景升高、
+// 门控关闭、完全旁路，绝不损伤高频辅音。
+static void gated_declick(int16_t *buf, size_t n)
+{
+    static int32_t s_floor = 0;  // 背景电平 mean-abs，跨帧保持
+
+    int16_t orig_prev = buf[0];
+    for (size_t i = 0; i < n; i++) {
+        int16_t cur = buf[i];
+        int32_t a = (cur < 0) ? -(int32_t)cur : (int32_t)cur;
+        int16_t left  = (i > 0) ? orig_prev : cur;
+        int16_t right = (i + 1 < n) ? buf[i + 1] : cur;
+
+        // 非对称背景跟踪：上升慢(>>9，1~2样本的孤立脉冲抬不动，只有持续语音能抬高)，
+        // 下降快(>>7，语音一停很快回到噪声底，及时开门)
+        if (s_floor == 0) s_floor = a;
+        if (a > s_floor) {
+            s_floor += (a - s_floor) >> 9;
+        } else {
+            s_floor -= (s_floor - a) >> 7;
+            if (s_floor < 0) s_floor = 0;
+        }
+
+        int16_t out = cur;
+        if (s_floor < DECLICK_GATE_LEVEL) {
+            int16_t m = declick_median3(left, cur, right);
+            int32_t jump = (cur > m) ? ((int32_t)cur - m) : ((int32_t)m - cur);
+            if (jump >= DECLICK_MIN_JUMP) {
+                out = m;  // 静音中的孤立脉冲：用中值替换
+            }
+        }
+
+        orig_prev = cur;
+        buf[i] = out;
+    }
+}
+
 void mic_process()
 {
     if (!mic_running || i2s_read_buffer == nullptr) {
@@ -206,17 +324,25 @@ void mic_process()
     if (err == ESP_OK && bytes_read > 0) {
         size_t samples_read = bytes_read / sizeof(int16_t);
 
-        // Apply gain (clamp to 16-bit to avoid overflow), then despike glitches
-        for (size_t i = 0; i < samples_read; i++) {
-            int32_t sample = (int32_t) i2s_read_buffer[i] * MIC_GAIN;
-            if (sample > 32767)
-                sample = 32767;
-            if (sample < -32768)
-                sample = -32768;
-            i2s_read_buffer[i] = (int16_t) sample;
+        // Read-only tap on the raw pre-gain samples for the voiceprint module.
+        // Must run before gain is applied and must not modify the buffer.
+        if (analysis_callback != nullptr) {
+            analysis_callback(i2s_read_buffer, samples_read);
         }
-        despike(i2s_read_buffer, samples_read);
+
+        // 只做：高通去低频 → 增益（软限幅兜底）。
+        // 不做去尖刺滤波——波形图上 98% 的“尖刺”是高频辅音的正常形态，
+        // despike/中值会把辅音高频一并砍掉，导致快速说话发糊。
         highpass(i2s_read_buffer, samples_read);
+        for (size_t i = 0; i < samples_read; i++) {
+            i2s_read_buffer[i] = apply_gain_soft(i2s_read_buffer[i]);
+        }
+
+        // Read-only tap on the processed samples for the recording module.
+        // Same PCM the Opus encoder sees, so .opus files match BLE audio.
+        if (recording_callback != nullptr) {
+            recording_callback(i2s_read_buffer, samples_read);
+        }
 
         if (audio_callback != nullptr) {
             audio_callback(i2s_read_buffer, samples_read);

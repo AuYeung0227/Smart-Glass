@@ -2,7 +2,21 @@
   "permissions": {
     "allow": [
       "Bash(python decode.py audio3_packets.txt)",
-      "Bash(\"/c/Users/86133/.platformio/penv/Scripts/platformio.exe\" run *)"
+      "Bash(\"/c/Users/86133/.platformio/penv/Scripts/platformio.exe\" run *)",
+      "Read(//c/Users/86133/Desktop/Smart Glass Project/omi-main/**)",
+      "Bash(py --version)",
+      "Read(//c/Python312/**)",
+      "Read(//c/Users/86133/AppData/Local/Programs/Python/**)",
+      "Read(//c/Users/86133/Desktop/Smart Glass Project/omi-main/omi/firmware/omi/src/lib/core/**)",
+      "WebSearch",
+      "WebFetch(domain:wiki.seeedstudio.com)",
+      "WebFetch(domain:templates.blakadder.com)",
+      "Bash(curl -sL --max-time 30 \"https://raw.githubusercontent.com/micropython/micropython/master/ports/esp32/boards/SEEED_XIAO_ESP32S3/mpconfigboard.h\")",
+      "Bash(py -)",
+      "Bash(grep -v '/\\\\._')",
+      "Bash(cd /tmp)",
+      "Bash(py -c ' *)",
+      "Bash(py verify_mfcc.py)"
     ]
   }
 }

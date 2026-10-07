@@ -9,8 +9,13 @@
 #include "config.h" // Use config.h for all configurations
 #include "esp_sleep.h"
 #include "mic.h"
+#include "ogg_opus.h"
 #include "opus_encoder.h"
 #include "ota.h"
+#include "recorder.h"
+#include "speaker_monitor.h"
+#include <FS.h>
+#include <SD.h>
 
 // Battery state
 float batteryVoltage = 0.0f;
@@ -46,6 +51,7 @@ bool powerSaveMode = false;
 static BLEUUID serviceUUID(OMI_SERVICE_UUID);
 static BLEUUID audioDataUUID(AUDIO_DATA_UUID);
 static BLEUUID audioCodecUUID(AUDIO_CODEC_UUID);
+static BLEUUID voiceprintControlUUID(VOICEPRINT_CONTROL_UUID);
 
 // OTA Service UUIDs
 static BLEUUID otaServiceUUID(OTA_SERVICE_UUID);
@@ -58,6 +64,7 @@ BLECharacteristic *audioDataCharacteristic;
 BLECharacteristic *audioCodecCharacteristic;
 BLECharacteristic *otaControlCharacteristic;
 BLECharacteristic *otaDataCharacteristic;
+BLECharacteristic *voiceprintControlCharacteristic;
 
 // Audio state
 bool audioEnabled = true;
@@ -87,6 +94,8 @@ void shutdownDevice();
 
 // Audio forward declarations
 void onMicData(int16_t *data, size_t samples);
+void onMicAnalysis(int16_t *data, size_t samples);
+void onMicRecord(int16_t *data, size_t samples);
 void onOpusEncoded(uint8_t *data, size_t len);
 void processAudioTx();
 void broadcastAudioPacket(uint8_t *data, size_t len);
@@ -104,6 +113,24 @@ void IRAM_ATTR buttonISR()
 // -------------------------------------------------------------------------
 void updateLED()
 {
+#if VOICEPRINT_ENABLE
+    // GPIO21 与扩展板 SD 片选共用。启用录音模块后，该引脚归 SD 独占，
+    // 固件不再驱动 LED。
+    //
+    // 关键教训：早期版本只在「SD 已挂载」时才停止驱动 GPIO21。结果在
+    // 恰好「未有卡/挂载失败」的情况下，本函数会把 CS 拉低、并每 1 秒翻转一次，
+    // SD 卡收不到合法的复位时序（CMD0 失败），于是永远挂不上卡、也无法重试。
+    // 代价：本构建没有状态 LED。
+    return;
+#endif
+
+    // GPIO21 doubles as the expansion board's SD chip select. Once the card is
+    // mounted, driving this pin would corrupt SD transactions, so the status LED
+    // goes dark for good - the accepted cost of using the SD slot.
+    if (recorder_sd_ok()) {
+        return;
+    }
+
     unsigned long now = millis();
     static unsigned long bootStartTime = 0;
     static unsigned long powerOffStartTime = 0;
@@ -266,6 +293,361 @@ void onMicData(int16_t *data, size_t samples)
     // Feed PCM data to Opus encoder
     opus_receive_pcm(data, samples);
 }
+
+void onMicAnalysis(int16_t *data, size_t samples)
+{
+    // Bypass tap: raw pre-gain samples for the voiceprint monitor. Read-only.
+    speaker_monitor_feed(data, samples);
+}
+
+void onMicRecord(int16_t *data, size_t samples)
+{
+    // Bypass tap: processed (post gain/highpass) samples for the recorder, i.e.
+    // the exact PCM that goes to Opus/BLE. Read-only, memcpy-only inside.
+    recorder_feed(data, samples);
+}
+
+// -------------------------------------------------------------------------
+// 0x20 录音回传状态机
+//
+// 把 SD 上的 .opus 逐帧解出来，按现有实时音频包格式推给手机：
+//   [2B 序号][1B 子序号=0][6B BCD 北京时间(YY MM DD HH MM SS)][opus 数据]
+// 同秒内的多帧靠递增的 2 字节序号区分顺序。
+//
+// 按 granule 差值节流（非阻塞），还原原始时间轴——被动录音预缓冲里被删掉
+// 的静音段，回传时表现为对应的等待间隔。回传期间实时音频推送暂停，
+// 避免两路包在同一个特征上混淆。
+// -------------------------------------------------------------------------
+static bool replayActive = false;                 // 回传开关
+static char replayFiles[REPLAY_MAX_FILES][64];    // 按时间升序的文件名列表
+static int replayFileCount = 0;
+static int replayFileIdx = 0;
+static char replayCurName[64];                    // 当前正在回传的文件名
+static File replayFile;
+static OggOpusReader replayReader;
+static bool replayReaderOpen = false;
+static int64_t replayLastGranule = -1;            // 上一帧 granule（节流基准）
+static uint32_t replayNextSendMs = 0;             // 下一帧允许发送的时刻
+static uint16_t replaySeq = 0;                    // 回传帧序号（同秒内区分顺序）
+static uint32_t replayFrameCount = 0;             // 已回传帧数（日志用）
+
+static void openReplayFileCleanup()
+{
+    if (replayReaderOpen) {
+        ogg_opus_close_read(&replayReader);
+        replayReaderOpen = false;
+    }
+    if (replayFile) {
+        replayFile.close();
+    }
+}
+
+// 打开列表中的下一个文件；全部打开过则返回 false。
+static bool openNextReplayFile()
+{
+    openReplayFileCleanup();
+    while (replayFileIdx < replayFileCount) {
+        char path[72];
+        snprintf(path, sizeof(path), "%s/%s", RECORD_SD_DIR,
+                 replayFiles[replayFileIdx]);
+        replayFile = SD.open(path, FILE_READ);
+        strcpy(replayCurName, replayFiles[replayFileIdx]);
+        replayFileIdx++;
+        if (!replayFile) {
+            Serial.printf("【回传】无法打开 %s，跳过\n", path);
+            continue;
+        }
+        if (!ogg_opus_open_read(&replayReader)) {
+            Serial.printf("【回传】%s 不是有效的 .opus，跳过\n", path);
+            replayFile.close();
+            continue;
+        }
+        replayReaderOpen = true;
+        replayLastGranule = -1;   // 换文件重置节流基准
+        Serial.printf("【回传】正在回传 %s\n", path);
+        return true;
+    }
+    return false;
+}
+
+static void startReplay()
+{
+    if (replayActive) {
+        Serial.println("【回传】已在回传中");
+        return;
+    }
+    replayFileCount = recorder_collect_files(replayFiles, REPLAY_MAX_FILES);
+    if (replayFileCount == 0) {
+        Serial.println("【回传】SD 上没有录音");
+        return;
+    }
+    replayFileIdx = 0;
+    replaySeq = 0;
+    replayFrameCount = 0;
+    replayNextSendMs = 0;
+    replayActive = true;
+    Serial.printf("【回传】开始回传 %d 条录音\n", replayFileCount);
+}
+
+static void stopReplay()
+{
+    if (!replayActive) {
+        return;
+    }
+    openReplayFileCleanup();
+    replayActive = false;
+    Serial.printf("【回传】已停止（共回传 %lu 帧）\n",
+                  (unsigned long)replayFrameCount);
+}
+
+// 回传一帧（由 loop_app 在回传期间反复调用，非阻塞）。
+static void pumpReplay()
+{
+    // 手机断开或未订阅时暂停推送（数据不丢弃，恢复后继续）。
+    if (!connected || !audioSubscribed || audioDataCharacteristic == nullptr) {
+        return;
+    }
+
+    if (!replayReaderOpen && !openNextReplayFile()) {
+        Serial.printf("【回传】回传完成（共 %lu 帧）\n",
+                      (unsigned long)replayFrameCount);
+        replayActive = false;
+        return;
+    }
+
+    uint8_t opus_buf[OPUS_OUTPUT_MAX_BYTES];
+    size_t len = 0;
+    int64_t granule = 0;
+    if (!ogg_opus_read_packet(&replayReader, replayFile, opus_buf, sizeof(opus_buf),
+                              &len, &granule)) {
+        // 当前文件读完，下一个由下一轮 pump 打开。
+        openReplayFileCleanup();
+        return;
+    }
+
+    // granule 差值节流：granule 单位是 48kHz 刻度，/48 即毫秒。
+    // 非阻塞写法——绝不在 loop 里 delay，避免饿死 mic/Opus。
+    if (replayLastGranule >= 0) {
+        int64_t d = (granule - replayLastGranule) / 48;
+        if (d > REPLAY_MAX_FRAME_DELAY_MS) {
+            d = REPLAY_MAX_FRAME_DELAY_MS;
+        }
+        if (d < REPLAY_MIN_FRAME_DELAY_MS) {
+            d = REPLAY_MIN_FRAME_DELAY_MS;
+        }
+        uint32_t now = millis();
+        if ((int32_t)(now - replayNextSendMs) < 0) {
+            return;   // 还没到发送时刻，帧暂存等待下轮
+        }
+        replayNextSendMs = now + (uint32_t)d;
+    }
+    replayLastGranule = granule;
+
+    // 组包：[2B 序号][1B 子序号][6B BCD 北京时间][opus]
+    uint8_t bcd[6];
+    recorder_frame_time(replayCurName, granule, bcd);
+
+    uint8_t pkt[REPLAY_PACKET_MAX_BYTES];
+    pkt[0] = replaySeq & 0xFF;
+    pkt[1] = (replaySeq >> 8) & 0xFF;
+    pkt[2] = 0;   // 子序号（实时链路留给分片用，回传固定 0）
+    memcpy(pkt + AUDIO_PACKET_HEADER_SIZE, bcd, 6);
+    memcpy(pkt + AUDIO_PACKET_HEADER_SIZE + 6, opus_buf, len);
+
+    audioDataCharacteristic->setValue(pkt, AUDIO_PACKET_HEADER_SIZE + 6 + len);
+    audioDataCharacteristic->notify();
+    replaySeq++;
+    replayFrameCount++;
+}
+
+// -------------------------------------------------------------------------
+// Voiceprint enrollment control (shared by the serial and BLE triggers)
+// -------------------------------------------------------------------------
+static const char *voiceprintCmdName(uint8_t cmd)
+{
+    switch (cmd) {
+    case VP_CMD_ENROLL: return "开始录入";
+    case VP_CMD_FINISH: return "结束录入";
+    case VP_CMD_ABORT:  return "放弃录入";
+    case VP_CMD_ERASE:  return "删除模板";
+    case VP_CMD_STATUS: return "查询状态";
+    case VP_CMD_REC_START: return "开始主动录音";
+    case VP_CMD_REC_STOP:  return "停止主动录音";
+    case VP_CMD_DEL_LAST:  return "删除最近录音";
+    case VP_CMD_DEL_ALL:   return "删除全部录音";
+    case VP_CMD_REPLAY:    return "开始回传";
+    case VP_CMD_SET_TIME:  return "对时";
+    case VP_CMD_REPLAY_STOP: return "停止回传";
+    default:            return "未知";
+    }
+}
+
+static void voiceprintHandleCommand(uint8_t cmd)
+{
+    switch (cmd) {
+    case VP_CMD_ENROLL:
+        if (!speaker_monitor_enroll_start()) {
+            Serial.println("【命令】无法开始录入（正在录入，或声纹模块未启用）");
+        }
+        break;
+    case VP_CMD_ABORT:
+        speaker_monitor_enroll_abort();
+        Serial.println("【命令】已放弃录入");
+        break;
+    case VP_CMD_FINISH:
+        // 结果行由 voiceprint_enroll_finish() 自己打印。
+        if (!speaker_monitor_enroll_finish_now()) {
+            Serial.println("【命令】当前不在录入，无需结束");
+        }
+        break;
+    case VP_CMD_ERASE:
+        speaker_monitor_erase_template();
+        break;
+    case VP_CMD_STATUS:
+        Serial.printf("【命令】状态=%s 模板=%s 已录取段数=%d\n",
+                      speaker_monitor_state_name(),
+                      speaker_monitor_has_template() ? "有" : "无",
+                      speaker_monitor_enroll_segments());
+        break;
+    case VP_CMD_REC_START:
+        // 主动录音优先级更高：先停掉被动录音，再开始连续录制。
+        speaker_monitor_force_idle();
+        if (!recorder_active_start()) {
+            Serial.println("【命令】主动录音启动失败（无SD卡？）");
+        }
+        break;
+    case VP_CMD_REC_STOP:
+        recorder_active_stop();
+        break;
+    case VP_CMD_DEL_LAST:
+        // 先保证状态机回待机（被动录音落盘），再删文件。
+        speaker_monitor_force_idle();
+        recorder_delete_last_active();
+        break;
+    case VP_CMD_DEL_ALL:
+        speaker_monitor_force_idle();
+        recorder_delete_all();
+        break;
+    case VP_CMD_REPLAY:
+        startReplay();
+        break;
+    case VP_CMD_REPLAY_STOP:
+        stopReplay();
+        break;
+    case VP_CMD_SET_TIME:
+        // 0x21 的负载（4 字节 unix）由 pollVoiceprintCommands() 解析，
+        // 不会走到这里。
+        Serial.println("【命令】对时命令缺少时间负载");
+        break;
+    default:
+        Serial.printf("【命令】未知命令 0x%02X\n", cmd);
+        break;
+    }
+}
+
+// BLE writes arrive on the Bluedroid task, which must not drive the monitor's
+// shared window buffer. Queue the command and let the main loop run it.
+// 0x21（对时）需要带 4 字节 unix 负载，所以把整个 value（≤5 字节）一起存下来。
+static volatile uint8_t voiceprintPendingPayload[5];
+static volatile size_t voiceprintPendingLen = 0;
+static volatile uint8_t voiceprintPendingCmd = 0;
+
+// 串口触发：一行一条命令 - enroll / abort / finish / erase / status /
+// recstart / recstop。
+static void pollVoiceprintCommands()
+{
+    static char line[32];
+    static size_t len = 0;
+
+    while (Serial.available() > 0) {
+        char c = (char)Serial.read();
+        if (c == '\r' || c == '\n') {
+            if (len == 0) {
+                continue;
+            }
+            line[len] = '\0';
+            len = 0;
+
+            if (!strcasecmp(line, "enroll")) {
+                voiceprintHandleCommand(VP_CMD_ENROLL);
+            } else if (!strcasecmp(line, "abort")) {
+                voiceprintHandleCommand(VP_CMD_ABORT);
+            } else if (!strcasecmp(line, "finish")) {
+                voiceprintHandleCommand(VP_CMD_FINISH);
+            } else if (!strcasecmp(line, "erase")) {
+                voiceprintHandleCommand(VP_CMD_ERASE);
+            } else if (!strcasecmp(line, "status")) {
+                voiceprintHandleCommand(VP_CMD_STATUS);
+            } else if (!strcasecmp(line, "recstart")) {
+                voiceprintHandleCommand(VP_CMD_REC_START);
+            } else if (!strcasecmp(line, "recstop")) {
+                voiceprintHandleCommand(VP_CMD_REC_STOP);
+            } else if (!strcasecmp(line, "dellast")) {
+                voiceprintHandleCommand(VP_CMD_DEL_LAST);
+            } else if (!strcasecmp(line, "delall")) {
+                voiceprintHandleCommand(VP_CMD_DEL_ALL);
+            } else if (!strcasecmp(line, "replay")) {
+                voiceprintHandleCommand(VP_CMD_REPLAY);
+            } else if (!strcasecmp(line, "replaystop")) {
+                voiceprintHandleCommand(VP_CMD_REPLAY_STOP);
+            } else if (!strcasecmp(line, "sdcheck")) {
+                recorder_sd_check();
+            } else if (!strcasecmp(line, "sdprobe")) {
+                recorder_sd_probe();
+            } else if (!strcasecmp(line, "sdpins")) {
+                recorder_sd_pins();
+            } else if (!strcasecmp(line, "sdmmc")) {
+                recorder_sd_mmc();
+            } else if (!strncasecmp(line, "settime", 7)) {
+                // 串口对时：settime <unix 秒>
+                uint32_t unix = (uint32_t)atol(line + 7);
+                recorder_sync_time(unix);
+            } else {
+                Serial.printf("【命令】无法识别的命令 '%s'\n", line);
+            }
+        } else if (len < sizeof(line) - 1) {
+            line[len++] = c;
+        }
+    }
+
+    uint8_t pending = voiceprintPendingCmd;
+    if (pending != 0) {
+        voiceprintPendingCmd = 0;
+        Serial.printf("【命令】手机写入 0x%02X（%s）\n", pending,
+                      voiceprintCmdName(pending));
+        if (pending == VP_CMD_SET_TIME && voiceprintPendingLen >= 5) {
+            // 0x21 负载 = 4 字节小端 unix 时间戳（秒）。
+            uint32_t unix = (uint32_t)voiceprintPendingPayload[1]
+                          | ((uint32_t)voiceprintPendingPayload[2] << 8)
+                          | ((uint32_t)voiceprintPendingPayload[3] << 16)
+                          | ((uint32_t)voiceprintPendingPayload[4] << 24);
+            recorder_sync_time(unix);
+        } else {
+            voiceprintHandleCommand(pending);
+        }
+    }
+}
+
+class VoiceprintControlCallback : public BLECharacteristicCallbacks
+{
+    void onWrite(BLECharacteristic *pCharacteristic)
+    {
+        size_t len = pCharacteristic->getLength();
+        if (len < 1) {
+            return;
+        }
+        // 先写负载字节，最后写命令字节：poll 一看到 cmd 非零，负载必已就位。
+        std::string val = pCharacteristic->getValue();
+        size_t n = (val.length() > sizeof(voiceprintPendingPayload))
+                       ? sizeof(voiceprintPendingPayload) : val.length();
+        const uint8_t *v = (const uint8_t *)val.data();
+        for (size_t i = 0; i < n; i++) {
+            voiceprintPendingPayload[i] = v[i];
+        }
+        voiceprintPendingLen = n;
+        voiceprintPendingCmd = voiceprintPendingPayload[0];
+    }
+};
 
 void onOpusEncoded(uint8_t *data, size_t len)
 {
@@ -539,6 +921,11 @@ void configure_ble()
     uint8_t codecId = opus_get_codec_id();
     audioCodecCharacteristic->setValue(&codecId, 1);
 
+    // Voiceprint control characteristic: 1-byte commands (enroll/abort/finish/erase/status)
+    voiceprintControlCharacteristic = service->createCharacteristic(
+        voiceprintControlUUID, BLECharacteristic::PROPERTY_WRITE);
+    voiceprintControlCharacteristic->setCallbacks(new VoiceprintControlCallback());
+
     // Battery Service
     BLEService *batteryService = server->createService(BATTERY_SERVICE_UUID);
     batteryLevelCharacteristic = batteryService->createCharacteristic(
@@ -654,6 +1041,24 @@ void setup_app()
 
         if (mic_start()) {
             mic_set_callback(onMicData);
+
+#if VOICEPRINT_ENABLE
+            // 录音 tap：喂入「处理后音频」（高通+增益，与 BLE 一致）。
+            // 初始化失败不影响主音频链路。
+            if (recorder_init()) {
+                mic_set_recording_callback(onMicRecord);
+            } else {
+                Serial.println("【录音】录音模块初始化失败，音频继续。");
+            }
+
+            // 声纹监控也是纯旁路：初始化失败时 mic/Opus/BLE 完全不受影响。
+            if (speaker_monitor_init()) {
+                mic_set_analysis_callback(onMicAnalysis);
+            } else {
+                Serial.println("【声纹】声纹监控已禁用，音频继续。");
+            }
+#endif
+
             Serial.println("Audio subsystem initialized successfully.");
         } else {
             Serial.println("Failed to start microphone!");
@@ -678,15 +1083,23 @@ void loop_app()
     // Process OTA updates
     ota_loop();
 
+    // Voiceprint enrollment commands from the serial console or BLE
+    pollVoiceprintCommands();
+
     // Process microphone data - always run to keep audio realtime
     if (audioEnabled && mic_is_running()) {
         mic_process();
         opus_process();
     }
 
-    // Send audio packets over BLE
+    // Send audio packets over BLE. During replay the live stream pauses so
+    // the replayed frames (with timestamps) don't interleave with live ones.
     if (connected && audioSubscribed) {
-        processAudioTx();
+        if (replayActive) {
+            pumpReplay();
+        } else {
+            processAudioTx();
+        }
     }
 
     // Check for power save mode (gentle optimization)

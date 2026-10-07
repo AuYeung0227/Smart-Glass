@@ -1,0 +1,10 @@
+<macro name="test18" icon="PLAY">
+   <assert-service description="Ensure Battery Service" uuid="0000180f-0000-1000-8000-00805f9b34fb">
+      <assert-characteristic description="Ensure Battery Level" uuid="00002a19-0000-1000-8000-00805f9b34fb">
+         <property name="NOTIFY" requirement="MANDATORY"/>
+      </assert-characteristic>
+   </assert-service>
+   <wait-for-notification description="Wait for notification to Battery Level" characteristic-uuid="00002a19-0000-1000-8000-00805f9b34fb" service-uuid="0000180f-0000-1000-8000-00805f9b34fb">
+      <assert-value description="Assert value equals 0x00" value="00"/>
+   </wait-for-notification>
+</macro>

@@ -96,11 +96,15 @@ typedef enum {
 #define MIC_BUFFER_SAMPLES 1600        // 100ms buffer (16000 * 0.1)
 #define MIC_GAIN 24                     // Microphone gain multiplier
 #define DESPIKE_BASELINE_FLOOR 200      // 自适应去尖峰：基线幅值下限
-#define DESPIKE_RATIO 4                 // 自适应去尖峰：尖刺判定倍数
-#define MAX_SPIKE_SAMPLES 32            // 最大尖刺宽度(采样点)，超过判为正常语音
-#define DIFF_THRESHOLD_RATIO 2          // 尖刺起点相邻差 > baseline*该值
-#define EMA_SHIFT 6                     // EMA 平滑 1/(2^6)≈4ms 跟踪速度
+#define DESPIKE_RATIO 2.5                 // 自适应去尖峰：尖刺判定倍数
+#define MAX_SPIKE_SAMPLES 48            // 最大尖刺宽度(采样点)，超过判为正常语音
+#define DIFF_THRESHOLD_RATIO 1.3          // 尖刺起点相邻差 > baseline*该值
+#define EMA_SHIFT 8                     // EMA 平滑 1/(2^6)≈4ms 跟踪速度
 #define AUDIO_RING_BUFFER_SAMPLES 8000 // 500ms of audio data
+
+// 门控去脉冲（仅在停顿/静音时剔除孤立咔哒声；语音段旁路，不伤辅音）
+#define DECLICK_GATE_LEVEL 700   // 背景电平(mean-abs)低于此才开启门控（增益后域）
+#define DECLICK_MIN_JUMP  500   // 样本偏离局部中值至少此值才判为脉冲并替换
 
 // =============================================================================
 // OPUS CODEC CONFIGURATION
@@ -117,11 +121,92 @@ typedef enum {
 #define AUDIO_TX_RING_BUFFER_SIZE 16   // Number of encoded frames to buffer
 
 // =============================================================================
+// SPEAKER VOICEPRINT + SMART RECORDING CONFIGURATION
+// =============================================================================
+// Bypass module: taps the raw pre-gain I2S stream, never touches the Opus path.
+// MFCC parameters MUST match utils/mfcc.py in the training repo, or the model
+// will see features it was not trained on.
+#define VOICEPRINT_ENABLE 1
+
+// --- VAD (energy gate, idle state only) ---
+#define VAD_FRAME_SAMPLES 320              // 20ms @ 16kHz
+#define VAD_ENERGY_THRESHOLD 0.0025f       // mean-abs of normalized [-1,1]; matches reference
+#define VAD_TRIGGER_FRAMES 3               // consecutive speech frames to leave idle state
+
+// --- MFCC front-end (must match utils/mfcc.py) ---
+#define MFCC_WIN_SIZE 512                  // 32ms window
+#define MFCC_HOP_SIZE 256                  // 16ms hop (50% overlap)
+#define MFCC_MEL_BANDS 20
+#define MFCC_NUM_FRAMES 63                 // frames kept after centre-crop/pad
+#define MFCC_FREC_MIN 20
+#define MFCC_FREC_MAX 8000                 // = sample rate / 2
+#define MFCC_PREEMPH 0.97f
+#define MFCC_EPSILON 1e-6f
+#define MFCC_SEGMENT_SAMPLES (MIC_SAMPLE_RATE * 2)                 // 2s analysis window
+#define MFCC_SEGMENT_HOP_SAMPLES (MFCC_SEGMENT_SAMPLES / 4)        // 0.5s sliding hop
+#define MFCC_XI_DIM (4 * MFCC_MEL_BANDS)                           // 80 = 4 x 20
+
+// --- Voiceprint matching (template-based, no neural network) ---
+// Xi-Vector is a deterministic feature, so enrollment is pure averaging - no
+// gradient training, no PC. One template = 640 B in SPIFFS.
+#define VOICEPRINT_ENROLL_SECONDS 20        // how long enrollment records
+#define VOICEPRINT_ENROLL_MIN_SEGMENTS 6    // reject enrollment with fewer than this
+#define VOICEPRINT_MATCH_THRESHOLD 1.2f     // normalized distance; below = same speaker
+#define VOICEPRINT_TEMPLATE_PATH "/speaker_template.bin"  // 2 x 80 float32 (mean, sigma)
+
+// --- State machine timeouts ---
+#define VERIFY_TIMEOUT_MS 30000            // 待验证 -> 待机 if no match within 30s
+
+// 被动录音的两个停止条件（任一满足即停录）
+#define PASSIVE_SILENCE_TIMEOUT_MS 10000   // 有人说话后连续 10s 安静 -> 停止被动录音
+#define PASSIVE_NOMATCH_TIMEOUT_MS 30000   // 上次匹配用户后 30s 内无再次匹配 -> 停止被动录音
+
+// --- Recording ---
+#define RECORD_PREBUFFER_SECONDS 30        // 滚动 PSRAM 预缓存秒数（处理后 PCM）
+#define RECORD_SD_CS_PIN 21                // 与 STATUS_LED_PIN 共用（扩展板 SD 片选）
+#define RECORD_SD_DIR "/omi"
+// 被动录音的预缓冲语音门控：只保留触发前「有人说话」的片段（说话人不必是用户本人）。
+// 门限作用在「处理后音频」（已高通 + MIC_GAIN 增益），故数值远高于原始域。
+#define RECORD_VAD_ENERGY_THRESHOLD 0.0025f // 处理后音频的语音门限（mean-abs，需实测调校）
+#define PREBUFFER_SPEECH_HANGOVER_FRAMES 5  // 语音段尾部多留 5 帧(100ms)，防截尾
+// 录音任务每个 tick 最多编码/写出的 Opus 帧数：限制单次占用时长，
+// 既保证预缓冲回填能追平，又不长时间阻塞其它任务。
+#define RECORD_FRAMES_PER_TICK 8
+// SD 容量检测间隔
+#define SD_CAPACITY_CHECK_INTERVAL_MS 60000 // 每 60s 检测一次剩余容量
+
+// --- Task ---
+#define VOICEPRINT_TASK_STACK_SIZE 8192
+#define VOICEPRINT_TASK_PRIORITY 1
+
+// =============================================================================
 // BLE UUID DEFINITIONS - OMI Protocol
 // =============================================================================
 #define OMI_SERVICE_UUID "19B10000-E8F2-537E-4F6C-D104768A1214"
 #define AUDIO_DATA_UUID "19B10001-E8F2-537E-4F6C-D104768A1214"
 #define AUDIO_CODEC_UUID "19B10002-E8F2-537E-4F6C-D104768A1214"
+#define VOICEPRINT_CONTROL_UUID "19B10003-E8F2-537E-4F6C-D104768A1214"  // write commands
+
+// Voiceprint control commands (BLE 19B10003 write, or serial line commands)
+#define VP_CMD_ENROLL 0x01   // start recording a template
+#define VP_CMD_FINISH 0x02   // end enrollment early and save
+#define VP_CMD_ABORT 0x03    // discard the in-progress enrollment
+#define VP_CMD_ERASE 0x04    // delete the stored template
+#define VP_CMD_STATUS 0x05   // print state (serial only)
+#define VP_CMD_REC_START 0x10 // 开始主动录音（从收到命令此刻起连续录）
+#define VP_CMD_REC_STOP 0x11  // 停止主动录音
+#define VP_CMD_DEL_LAST 0x12  // 删除最近一条主动录音（连同被其打断、时间相连的被动录音）
+#define VP_CMD_DEL_ALL 0x13   // 删除 SD 卡所有录音
+#define VP_CMD_REPLAY 0x20    // 开始回传全部录音（按时间顺序，逐帧带北京时间戳）
+#define VP_CMD_SET_TIME 0x21  // 手机对时：负载 = 4 字节小端 unix 时间戳（秒）
+#define VP_CMD_REPLAY_STOP 0x22 // 停止回传
+
+// --- 录音回传 ---
+// 回传按 granule 差值还原原始时间轴（含被删静音的间隔）；每帧间隔截断到该范围。
+#define REPLAY_MIN_FRAME_DELAY_MS 10
+#define REPLAY_MAX_FRAME_DELAY_MS 1000
+#define REPLAY_MAX_FILES 64          // 单次回传最多处理的录音文件数
+#define REPLAY_PACKET_MAX_BYTES (AUDIO_PACKET_HEADER_SIZE + 6 + OPUS_OUTPUT_MAX_BYTES) // [3B头][6B BCD][opus]
 
 // Battery Service UUID - Cast to uint16_t for BLE compatibility
 #define BATTERY_SERVICE_UUID (uint16_t) 0x180F
