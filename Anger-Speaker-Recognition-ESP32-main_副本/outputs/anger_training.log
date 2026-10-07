@@ -1,0 +1,590 @@
+[ESD] train: X=(12000, 20, 63)  y=Counter({1: 6000, 0: 6000})
+[ESD] test: X=(1200, 20, 63)  y=Counter({1: 600, 0: 600})
+[ESD] evaluation: X=(800, 20, 63)  y=Counter({1: 400, 0: 400})
+
+======================================================================
+  MicroLightCNN
+======================================================================
+  parameters: 19,265
+Epoch 1/60
+375/375 - 3s - 7ms/step - accuracy: 0.6757 - loss: 0.6163 - val_accuracy: 0.7125 - val_loss: 0.5476 - learning_rate: 0.0010
+Epoch 2/60
+375/375 - 2s - 5ms/step - accuracy: 0.7377 - loss: 0.5378 - val_accuracy: 0.7412 - val_loss: 0.5179 - learning_rate: 0.0010
+Epoch 3/60
+375/375 - 2s - 5ms/step - accuracy: 0.7692 - loss: 0.4904 - val_accuracy: 0.7663 - val_loss: 0.4995 - learning_rate: 0.0010
+Epoch 4/60
+375/375 - 2s - 4ms/step - accuracy: 0.7952 - loss: 0.4481 - val_accuracy: 0.7725 - val_loss: 0.4905 - learning_rate: 0.0010
+Epoch 5/60
+375/375 - 2s - 4ms/step - accuracy: 0.8127 - loss: 0.4167 - val_accuracy: 0.7812 - val_loss: 0.4960 - learning_rate: 0.0010
+Epoch 6/60
+375/375 - 2s - 5ms/step - accuracy: 0.8300 - loss: 0.3914 - val_accuracy: 0.8012 - val_loss: 0.4628 - learning_rate: 0.0010
+Epoch 7/60
+375/375 - 2s - 5ms/step - accuracy: 0.8430 - loss: 0.3724 - val_accuracy: 0.7975 - val_loss: 0.4590 - learning_rate: 0.0010
+Epoch 8/60
+375/375 - 2s - 5ms/step - accuracy: 0.8513 - loss: 0.3559 - val_accuracy: 0.7962 - val_loss: 0.4672 - learning_rate: 0.0010
+Epoch 9/60
+375/375 - 2s - 5ms/step - accuracy: 0.8622 - loss: 0.3413 - val_accuracy: 0.7912 - val_loss: 0.4756 - learning_rate: 0.0010
+Epoch 10/60
+375/375 - 2s - 5ms/step - accuracy: 0.8692 - loss: 0.3298 - val_accuracy: 0.7862 - val_loss: 0.4841 - learning_rate: 0.0010
+Epoch 11/60
+375/375 - 2s - 5ms/step - accuracy: 0.8750 - loss: 0.3181 - val_accuracy: 0.7775 - val_loss: 0.5033 - learning_rate: 0.0010
+Epoch 12/60
+375/375 - 2s - 5ms/step - accuracy: 0.8771 - loss: 0.3115 - val_accuracy: 0.7725 - val_loss: 0.5317 - learning_rate: 0.0010
+Epoch 13/60
+375/375 - 2s - 5ms/step - accuracy: 0.8818 - loss: 0.3033 - val_accuracy: 0.7775 - val_loss: 0.5496 - learning_rate: 0.0010
+Epoch 14/60
+375/375 - 2s - 5ms/step - accuracy: 0.8882 - loss: 0.2876 - val_accuracy: 0.7713 - val_loss: 0.5750 - learning_rate: 5.0000e-04
+Epoch 15/60
+375/375 - 2s - 4ms/step - accuracy: 0.8948 - loss: 0.2723 - val_accuracy: 0.7713 - val_loss: 0.5756 - learning_rate: 5.0000e-04
+Epoch 16/60
+375/375 - 2s - 5ms/step - accuracy: 0.9020 - loss: 0.2657 - val_accuracy: 0.7713 - val_loss: 0.5729 - learning_rate: 5.0000e-04
+Epoch 17/60
+375/375 - 2s - 5ms/step - accuracy: 0.9054 - loss: 0.2579 - val_accuracy: 0.7750 - val_loss: 0.5702 - learning_rate: 5.0000e-04
+Epoch 18/60
+375/375 - 2s - 5ms/step - accuracy: 0.9078 - loss: 0.2503 - val_accuracy: 0.7875 - val_loss: 0.5753 - learning_rate: 5.0000e-04
+Epoch 19/60
+375/375 - 2s - 5ms/step - accuracy: 0.9119 - loss: 0.2451 - val_accuracy: 0.7837 - val_loss: 0.5850 - learning_rate: 5.0000e-04
+Epoch 20/60
+375/375 - 2s - 4ms/step - accuracy: 0.9175 - loss: 0.2297 - val_accuracy: 0.7950 - val_loss: 0.5633 - learning_rate: 2.5000e-04
+Epoch 21/60
+375/375 - 2s - 5ms/step - accuracy: 0.9212 - loss: 0.2247 - val_accuracy: 0.7900 - val_loss: 0.5711 - learning_rate: 2.5000e-04
+  [Keras F32] acc=0.7975  F1=0.8118  AUC=0.8686
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpnw12sytu'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 20, 63, 1), dtype=tf.float32, name='mfcc')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6061702032: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6061702992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103269840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6061701840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103271184: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270800: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103271952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103273104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103272336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1779928498.900296  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779928498.900649  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+I0000 00:00:1779928498.906166  816580 mlir_graph_optimization_pass.cc:425] MLIR V1 optimization pass is not enabled
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmp16_x8mq5'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 20, 63, 1), dtype=tf.float32, name='mfcc')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6061702032: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6061702992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103269840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6061701840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103271184: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270800: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103271952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103273104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103272336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779928499.364356  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779928499.364365  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 TFLite]  acc=0.7975  F1=0.8118  arena=210.9KB  flash=80.9KB  lat_host=0.0ms
+  [INT8 TFLite] acc=0.7908 F1=0.8059  arena=59.7KB flash=28.7KB lat_host=0.0ms
+
+======================================================================
+  DS-CNN
+======================================================================
+  parameters: 5,153
+Epoch 1/60
+375/375 - 7s - 20ms/step - accuracy: 0.6949 - loss: 0.5727 - val_accuracy: 0.6288 - val_loss: 0.6404 - learning_rate: 0.0010
+Epoch 2/60
+375/375 - 6s - 17ms/step - accuracy: 0.7732 - loss: 0.4737 - val_accuracy: 0.7175 - val_loss: 0.5362 - learning_rate: 0.0010
+Epoch 3/60
+375/375 - 6s - 17ms/step - accuracy: 0.7978 - loss: 0.4342 - val_accuracy: 0.7462 - val_loss: 0.5104 - learning_rate: 0.0010
+Epoch 4/60
+375/375 - 6s - 17ms/step - accuracy: 0.8132 - loss: 0.4148 - val_accuracy: 0.7312 - val_loss: 0.5210 - learning_rate: 0.0010
+Epoch 5/60
+375/375 - 6s - 17ms/step - accuracy: 0.8264 - loss: 0.3961 - val_accuracy: 0.7763 - val_loss: 0.4755 - learning_rate: 0.0010
+Epoch 6/60
+375/375 - 6s - 16ms/step - accuracy: 0.8296 - loss: 0.3760 - val_accuracy: 0.7700 - val_loss: 0.4647 - learning_rate: 0.0010
+Epoch 7/60
+375/375 - 6s - 16ms/step - accuracy: 0.8373 - loss: 0.3664 - val_accuracy: 0.7713 - val_loss: 0.4804 - learning_rate: 0.0010
+Epoch 8/60
+375/375 - 6s - 17ms/step - accuracy: 0.8407 - loss: 0.3588 - val_accuracy: 0.7738 - val_loss: 0.4607 - learning_rate: 0.0010
+Epoch 9/60
+375/375 - 6s - 17ms/step - accuracy: 0.8475 - loss: 0.3464 - val_accuracy: 0.7887 - val_loss: 0.4405 - learning_rate: 0.0010
+Epoch 10/60
+375/375 - 6s - 17ms/step - accuracy: 0.8490 - loss: 0.3432 - val_accuracy: 0.7875 - val_loss: 0.4405 - learning_rate: 0.0010
+Epoch 11/60
+375/375 - 7s - 17ms/step - accuracy: 0.8545 - loss: 0.3322 - val_accuracy: 0.7788 - val_loss: 0.4544 - learning_rate: 0.0010
+Epoch 12/60
+375/375 - 6s - 17ms/step - accuracy: 0.8612 - loss: 0.3250 - val_accuracy: 0.7775 - val_loss: 0.4818 - learning_rate: 0.0010
+Epoch 13/60
+375/375 - 6s - 17ms/step - accuracy: 0.8630 - loss: 0.3193 - val_accuracy: 0.7700 - val_loss: 0.4696 - learning_rate: 0.0010
+Epoch 14/60
+375/375 - 6s - 17ms/step - accuracy: 0.8590 - loss: 0.3151 - val_accuracy: 0.7862 - val_loss: 0.4471 - learning_rate: 0.0010
+Epoch 15/60
+375/375 - 7s - 18ms/step - accuracy: 0.8648 - loss: 0.3104 - val_accuracy: 0.7800 - val_loss: 0.4388 - learning_rate: 0.0010
+Epoch 16/60
+375/375 - 7s - 18ms/step - accuracy: 0.8677 - loss: 0.3011 - val_accuracy: 0.7925 - val_loss: 0.4425 - learning_rate: 0.0010
+Epoch 17/60
+375/375 - 7s - 18ms/step - accuracy: 0.8720 - loss: 0.2997 - val_accuracy: 0.7825 - val_loss: 0.4515 - learning_rate: 0.0010
+Epoch 18/60
+375/375 - 6s - 17ms/step - accuracy: 0.8716 - loss: 0.2970 - val_accuracy: 0.7500 - val_loss: 0.5537 - learning_rate: 0.0010
+Epoch 19/60
+375/375 - 7s - 18ms/step - accuracy: 0.8730 - loss: 0.2899 - val_accuracy: 0.7650 - val_loss: 0.5298 - learning_rate: 0.0010
+Epoch 20/60
+375/375 - 7s - 18ms/step - accuracy: 0.8792 - loss: 0.2815 - val_accuracy: 0.7738 - val_loss: 0.4942 - learning_rate: 0.0010
+Epoch 21/60
+375/375 - 7s - 18ms/step - accuracy: 0.8838 - loss: 0.2789 - val_accuracy: 0.7875 - val_loss: 0.4679 - learning_rate: 0.0010
+Epoch 22/60
+375/375 - 6s - 17ms/step - accuracy: 0.8907 - loss: 0.2595 - val_accuracy: 0.8050 - val_loss: 0.4349 - learning_rate: 5.0000e-04
+Epoch 23/60
+375/375 - 7s - 17ms/step - accuracy: 0.8907 - loss: 0.2559 - val_accuracy: 0.8087 - val_loss: 0.4416 - learning_rate: 5.0000e-04
+Epoch 24/60
+375/375 - 5s - 14ms/step - accuracy: 0.8948 - loss: 0.2509 - val_accuracy: 0.8138 - val_loss: 0.4079 - learning_rate: 5.0000e-04
+Epoch 25/60
+375/375 - 5s - 14ms/step - accuracy: 0.8960 - loss: 0.2493 - val_accuracy: 0.8100 - val_loss: 0.4366 - learning_rate: 5.0000e-04
+Epoch 26/60
+375/375 - 5s - 13ms/step - accuracy: 0.8961 - loss: 0.2460 - val_accuracy: 0.8037 - val_loss: 0.4395 - learning_rate: 5.0000e-04
+Epoch 27/60
+375/375 - 5s - 14ms/step - accuracy: 0.8952 - loss: 0.2455 - val_accuracy: 0.8150 - val_loss: 0.4333 - learning_rate: 5.0000e-04
+Epoch 28/60
+375/375 - 5s - 13ms/step - accuracy: 0.8982 - loss: 0.2415 - val_accuracy: 0.8087 - val_loss: 0.4418 - learning_rate: 5.0000e-04
+Epoch 29/60
+375/375 - 5s - 14ms/step - accuracy: 0.9001 - loss: 0.2368 - val_accuracy: 0.8250 - val_loss: 0.4250 - learning_rate: 5.0000e-04
+Epoch 30/60
+375/375 - 5s - 14ms/step - accuracy: 0.8999 - loss: 0.2331 - val_accuracy: 0.8100 - val_loss: 0.4194 - learning_rate: 5.0000e-04
+Epoch 31/60
+375/375 - 5s - 14ms/step - accuracy: 0.9051 - loss: 0.2235 - val_accuracy: 0.8200 - val_loss: 0.4102 - learning_rate: 2.5000e-04
+Epoch 32/60
+375/375 - 5s - 14ms/step - accuracy: 0.9062 - loss: 0.2214 - val_accuracy: 0.8263 - val_loss: 0.4071 - learning_rate: 2.5000e-04
+Epoch 33/60
+375/375 - 5s - 14ms/step - accuracy: 0.9060 - loss: 0.2203 - val_accuracy: 0.8150 - val_loss: 0.4127 - learning_rate: 2.5000e-04
+Epoch 34/60
+375/375 - 5s - 14ms/step - accuracy: 0.9084 - loss: 0.2201 - val_accuracy: 0.8188 - val_loss: 0.4125 - learning_rate: 2.5000e-04
+Epoch 35/60
+375/375 - 5s - 14ms/step - accuracy: 0.9091 - loss: 0.2163 - val_accuracy: 0.8213 - val_loss: 0.4133 - learning_rate: 2.5000e-04
+Epoch 36/60
+375/375 - 5s - 14ms/step - accuracy: 0.9091 - loss: 0.2173 - val_accuracy: 0.8175 - val_loss: 0.4153 - learning_rate: 2.5000e-04
+Epoch 37/60
+375/375 - 5s - 14ms/step - accuracy: 0.9083 - loss: 0.2165 - val_accuracy: 0.8263 - val_loss: 0.4180 - learning_rate: 2.5000e-04
+Epoch 38/60
+375/375 - 5s - 14ms/step - accuracy: 0.9128 - loss: 0.2125 - val_accuracy: 0.8263 - val_loss: 0.4192 - learning_rate: 2.5000e-04
+Epoch 39/60
+375/375 - 5s - 14ms/step - accuracy: 0.9118 - loss: 0.2108 - val_accuracy: 0.8238 - val_loss: 0.4162 - learning_rate: 1.2500e-04
+Epoch 40/60
+375/375 - 5s - 14ms/step - accuracy: 0.9112 - loss: 0.2110 - val_accuracy: 0.8163 - val_loss: 0.4176 - learning_rate: 1.2500e-04
+Epoch 41/60
+375/375 - 5s - 14ms/step - accuracy: 0.9124 - loss: 0.2111 - val_accuracy: 0.8263 - val_loss: 0.4124 - learning_rate: 1.2500e-04
+Epoch 42/60
+375/375 - 5s - 14ms/step - accuracy: 0.9161 - loss: 0.2056 - val_accuracy: 0.8238 - val_loss: 0.4234 - learning_rate: 1.2500e-04
+Epoch 43/60
+375/375 - 5s - 14ms/step - accuracy: 0.9165 - loss: 0.2041 - val_accuracy: 0.8300 - val_loss: 0.4179 - learning_rate: 1.2500e-04
+Epoch 44/60
+375/375 - 5s - 14ms/step - accuracy: 0.9135 - loss: 0.2060 - val_accuracy: 0.8250 - val_loss: 0.4228 - learning_rate: 1.2500e-04
+Epoch 45/60
+375/375 - 5s - 14ms/step - accuracy: 0.9156 - loss: 0.2042 - val_accuracy: 0.8225 - val_loss: 0.4219 - learning_rate: 6.2500e-05
+Epoch 46/60
+375/375 - 5s - 14ms/step - accuracy: 0.9156 - loss: 0.2028 - val_accuracy: 0.8238 - val_loss: 0.4193 - learning_rate: 6.2500e-05
+Epoch 47/60
+375/375 - 5s - 14ms/step - accuracy: 0.9169 - loss: 0.2013 - val_accuracy: 0.8250 - val_loss: 0.4208 - learning_rate: 6.2500e-05
+Epoch 48/60
+375/375 - 5s - 14ms/step - accuracy: 0.9156 - loss: 0.2016 - val_accuracy: 0.8225 - val_loss: 0.4241 - learning_rate: 6.2500e-05
+Epoch 49/60
+375/375 - 5s - 14ms/step - accuracy: 0.9175 - loss: 0.2008 - val_accuracy: 0.8263 - val_loss: 0.4226 - learning_rate: 6.2500e-05
+Epoch 50/60
+375/375 - 5s - 14ms/step - accuracy: 0.9170 - loss: 0.2027 - val_accuracy: 0.8263 - val_loss: 0.4259 - learning_rate: 6.2500e-05
+Epoch 51/60
+375/375 - 5s - 14ms/step - accuracy: 0.9202 - loss: 0.1976 - val_accuracy: 0.8250 - val_loss: 0.4276 - learning_rate: 3.1250e-05
+Epoch 52/60
+375/375 - 5s - 14ms/step - accuracy: 0.9187 - loss: 0.1960 - val_accuracy: 0.8250 - val_loss: 0.4286 - learning_rate: 3.1250e-05
+Epoch 53/60
+375/375 - 5s - 14ms/step - accuracy: 0.9161 - loss: 0.1963 - val_accuracy: 0.8250 - val_loss: 0.4281 - learning_rate: 3.1250e-05
+Epoch 54/60
+375/375 - 5s - 14ms/step - accuracy: 0.9182 - loss: 0.1989 - val_accuracy: 0.8225 - val_loss: 0.4318 - learning_rate: 3.1250e-05
+Epoch 55/60
+375/375 - 5s - 14ms/step - accuracy: 0.9176 - loss: 0.1984 - val_accuracy: 0.8288 - val_loss: 0.4296 - learning_rate: 3.1250e-05
+Epoch 56/60
+375/375 - 5s - 14ms/step - accuracy: 0.9212 - loss: 0.1958 - val_accuracy: 0.8263 - val_loss: 0.4314 - learning_rate: 3.1250e-05
+Epoch 57/60
+375/375 - 5s - 14ms/step - accuracy: 0.9180 - loss: 0.1949 - val_accuracy: 0.8275 - val_loss: 0.4304 - learning_rate: 1.5625e-05
+Epoch 58/60
+375/375 - 5s - 14ms/step - accuracy: 0.9164 - loss: 0.1985 - val_accuracy: 0.8213 - val_loss: 0.4343 - learning_rate: 1.5625e-05
+  [Keras F32] acc=0.8325  F1=0.8335  AUC=0.9027
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmphfamn3rv'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 20, 63, 1), dtype=tf.float32, name='mfcc')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6103279440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103276944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103278672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569808: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133566736: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133574800: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133575952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133573264: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133566928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133573456: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571728: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133572112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133572688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570768: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570384: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568848: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568656: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133574224: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571152: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571344: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570960: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570000: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567888: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569616: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568080: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571536: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+W0000 00:00:1779928832.163944  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779928832.163954  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmp0li7vdmp'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 20, 63, 1), dtype=tf.float32, name='mfcc')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6103279440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103276944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103278672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569808: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133566736: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567696: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133574800: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133575952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133573264: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133566928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133573456: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571728: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133572112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133572688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570768: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570384: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568848: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568656: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133574224: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571152: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571344: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570960: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133570000: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133567888: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133569616: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133568080: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133571536: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6133576336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779928832.721805  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779928832.721814  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 TFLite]  acc=0.8325  F1=0.8335  arena=302.6KB  flash=22.6KB  lat_host=0.0ms
+  [INT8 TFLite] acc=0.8308 F1=0.8410  arena=81.2KB flash=16.5KB lat_host=0.0ms
+
+======================================================================
+  MatchboxNet
+======================================================================
+  parameters: 18,241
+Epoch 1/60
+I0000 00:00:1779928834.424523  819866 service.cc:152] XLA service 0x32628b150 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+I0000 00:00:1779928834.424535  819866 service.cc:160]   StreamExecutor device (0): Host, Default Version
+I0000 00:00:1779928834.474871  819866 device_compiler.h:188] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
+375/375 - 7s - 18ms/step - accuracy: 0.7558 - loss: 0.4948 - val_accuracy: 0.7675 - val_loss: 0.4799 - learning_rate: 0.0010
+Epoch 2/60
+375/375 - 5s - 13ms/step - accuracy: 0.8229 - loss: 0.3919 - val_accuracy: 0.7713 - val_loss: 0.4467 - learning_rate: 0.0010
+Epoch 3/60
+375/375 - 5s - 13ms/step - accuracy: 0.8464 - loss: 0.3454 - val_accuracy: 0.7825 - val_loss: 0.4419 - learning_rate: 0.0010
+Epoch 4/60
+375/375 - 5s - 13ms/step - accuracy: 0.8648 - loss: 0.3133 - val_accuracy: 0.7950 - val_loss: 0.4510 - learning_rate: 0.0010
+Epoch 5/60
+375/375 - 5s - 13ms/step - accuracy: 0.8807 - loss: 0.2858 - val_accuracy: 0.7800 - val_loss: 0.4646 - learning_rate: 0.0010
+Epoch 6/60
+375/375 - 5s - 13ms/step - accuracy: 0.8912 - loss: 0.2619 - val_accuracy: 0.7812 - val_loss: 0.4763 - learning_rate: 0.0010
+Epoch 7/60
+375/375 - 5s - 13ms/step - accuracy: 0.9025 - loss: 0.2407 - val_accuracy: 0.7613 - val_loss: 0.5260 - learning_rate: 0.0010
+Epoch 8/60
+375/375 - 5s - 13ms/step - accuracy: 0.9113 - loss: 0.2200 - val_accuracy: 0.7750 - val_loss: 0.5192 - learning_rate: 0.0010
+Epoch 9/60
+375/375 - 5s - 13ms/step - accuracy: 0.9201 - loss: 0.1986 - val_accuracy: 0.7775 - val_loss: 0.5376 - learning_rate: 0.0010
+Epoch 10/60
+375/375 - 5s - 13ms/step - accuracy: 0.9382 - loss: 0.1621 - val_accuracy: 0.8138 - val_loss: 0.4525 - learning_rate: 5.0000e-04
+Epoch 11/60
+375/375 - 5s - 13ms/step - accuracy: 0.9468 - loss: 0.1414 - val_accuracy: 0.8125 - val_loss: 0.4711 - learning_rate: 5.0000e-04
+Epoch 12/60
+375/375 - 5s - 13ms/step - accuracy: 0.9548 - loss: 0.1260 - val_accuracy: 0.8112 - val_loss: 0.4898 - learning_rate: 5.0000e-04
+Epoch 13/60
+375/375 - 5s - 13ms/step - accuracy: 0.9608 - loss: 0.1124 - val_accuracy: 0.8125 - val_loss: 0.5106 - learning_rate: 5.0000e-04
+Epoch 14/60
+375/375 - 5s - 13ms/step - accuracy: 0.9671 - loss: 0.0989 - val_accuracy: 0.8125 - val_loss: 0.5381 - learning_rate: 5.0000e-04
+Epoch 15/60
+375/375 - 5s - 13ms/step - accuracy: 0.9729 - loss: 0.0866 - val_accuracy: 0.8150 - val_loss: 0.5706 - learning_rate: 5.0000e-04
+Epoch 16/60
+375/375 - 5s - 13ms/step - accuracy: 0.9762 - loss: 0.0735 - val_accuracy: 0.8188 - val_loss: 0.5655 - learning_rate: 2.5000e-04
+Epoch 17/60
+375/375 - 5s - 13ms/step - accuracy: 0.9844 - loss: 0.0594 - val_accuracy: 0.8225 - val_loss: 0.5887 - learning_rate: 2.5000e-04
+Epoch 18/60
+375/375 - 5s - 13ms/step - accuracy: 0.9890 - loss: 0.0505 - val_accuracy: 0.8250 - val_loss: 0.6135 - learning_rate: 2.5000e-04
+Epoch 19/60
+375/375 - 5s - 13ms/step - accuracy: 0.9923 - loss: 0.0430 - val_accuracy: 0.8213 - val_loss: 0.6430 - learning_rate: 2.5000e-04
+Epoch 20/60
+375/375 - 5s - 13ms/step - accuracy: 0.9950 - loss: 0.0367 - val_accuracy: 0.8200 - val_loss: 0.6734 - learning_rate: 2.5000e-04
+Epoch 21/60
+375/375 - 5s - 13ms/step - accuracy: 0.9971 - loss: 0.0310 - val_accuracy: 0.8238 - val_loss: 0.7041 - learning_rate: 2.5000e-04
+Epoch 22/60
+375/375 - 5s - 13ms/step - accuracy: 0.9977 - loss: 0.0270 - val_accuracy: 0.8313 - val_loss: 0.7331 - learning_rate: 1.2500e-04
+Epoch 23/60
+375/375 - 5s - 13ms/step - accuracy: 0.9988 - loss: 0.0229 - val_accuracy: 0.8288 - val_loss: 0.7470 - learning_rate: 1.2500e-04
+Epoch 24/60
+375/375 - 5s - 13ms/step - accuracy: 0.9993 - loss: 0.0195 - val_accuracy: 0.8288 - val_loss: 0.7646 - learning_rate: 1.2500e-04
+Epoch 25/60
+375/375 - 5s - 13ms/step - accuracy: 0.9996 - loss: 0.0170 - val_accuracy: 0.8300 - val_loss: 0.7837 - learning_rate: 1.2500e-04
+Epoch 26/60
+375/375 - 5s - 13ms/step - accuracy: 0.9997 - loss: 0.0149 - val_accuracy: 0.8250 - val_loss: 0.8024 - learning_rate: 1.2500e-04
+Epoch 27/60
+375/375 - 5s - 13ms/step - accuracy: 0.9998 - loss: 0.0130 - val_accuracy: 0.8250 - val_loss: 0.8221 - learning_rate: 1.2500e-04
+Epoch 28/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0116 - val_accuracy: 0.8075 - val_loss: 0.8384 - learning_rate: 6.2500e-05
+Epoch 29/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0104 - val_accuracy: 0.8075 - val_loss: 0.8475 - learning_rate: 6.2500e-05
+Epoch 30/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0095 - val_accuracy: 0.8075 - val_loss: 0.8584 - learning_rate: 6.2500e-05
+Epoch 31/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0087 - val_accuracy: 0.8062 - val_loss: 0.8702 - learning_rate: 6.2500e-05
+Epoch 32/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0080 - val_accuracy: 0.8062 - val_loss: 0.8825 - learning_rate: 6.2500e-05
+Epoch 33/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0073 - val_accuracy: 0.8062 - val_loss: 0.8949 - learning_rate: 6.2500e-05
+Epoch 34/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0068 - val_accuracy: 0.8012 - val_loss: 0.9071 - learning_rate: 3.1250e-05
+Epoch 35/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0063 - val_accuracy: 0.8012 - val_loss: 0.9130 - learning_rate: 3.1250e-05
+Epoch 36/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0060 - val_accuracy: 0.8025 - val_loss: 0.9194 - learning_rate: 3.1250e-05
+Epoch 37/60
+375/375 - 5s - 13ms/step - accuracy: 1.0000 - loss: 0.0057 - val_accuracy: 0.8025 - val_loss: 0.9263 - learning_rate: 3.1250e-05
+  [Keras F32] acc=0.8267  F1=0.8267  AUC=0.9046
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpgomh5c2w'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6103270416: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103279248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103279632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103281360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270224: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103281168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103272720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453776: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454736: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455120: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495456464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455888: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+W0000 00:00:1779929018.223188  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779929018.223198  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpv8q6kd4i'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 1), dtype=tf.float32, name=None)
+Captures:
+  6103270416: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103277328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103279248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103279632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451088: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103280208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103281360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103270224: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103281168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6103272720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453584: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453776: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495449168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454352: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454160: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454736: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454928: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455120: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453392: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455504: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495450128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495452816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495453008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495451280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495456464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495455888: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14495454544: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779929018.955426  816580 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779929018.955434  816580 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 TFLite]  acc=0.8267  F1=0.8267  arena=353.8KB  flash=82.0KB  lat_host=0.1ms
+  [INT8 TFLite] acc=0.8225 F1=0.8221  arena=94.7KB flash=44.1KB lat_host=0.0ms
+
+  -> wrote LaTeX table to outputs/anger/table_iii.tex
+
+Done. Outputs in outputs/anger

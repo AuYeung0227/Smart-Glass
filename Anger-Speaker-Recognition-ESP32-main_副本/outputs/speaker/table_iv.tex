@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\caption{Speaker identification results for $N=4$ enrolled speakers. Rejection rate measured under joint thresholds $\tau_{sp}=0.60$ and $\delta=0.20$.}
+\label{tab:speaker_results}
+\begin{tabular}{lccccc}
+\toprule
+Model & Top-1 & EER & Rej. Rate & Params & Lat.\ (ms) \\
+\midrule
+MLP-XiEmbedding (INT8) & 98.6 & 0.01 & 6.1 & 21,604 & 0.0 \\
+ECAPA-TDNN-pruned (F32) & 99.3 & 0.01 & 1.4 & 26,208 & 0.1 \\
+CAM++ (F32) & 100.0 & 0.01 & 6.8 & 23,214 & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

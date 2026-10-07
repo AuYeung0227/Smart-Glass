@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\caption{End-to-end pipeline latency on the ESP32-S3-N16R8, averaged over [N] inferences. The 2-s I2S capture window is reported separately because it overlaps with the next inference cycle and is not part of the sequential processing budget.}
+\label{tab:pipeline_latency}
+\begin{tabular}{lcc}
+\toprule
+Stage & Time (ms) & \% of total \\
+\midrule
+I2S audio capture (2 s window) & 2000.0 & -- \\
+MFCC extraction & 190.0 & 40.8 \\
+MicroLightCNN inference (F32) & 219.0 & 47.0 \\
+Xi-Vector pooling + StandardScaler & 1.0 & 0.2 \\
+MLP-XiEmbedding inference (INT8) & 55.0 & 11.8 \\
+Decision fusion + temporal voting & 0.5 & 0.1 \\
+\midrule
+End-to-end & 465.5 & 100 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,1489 @@
+<title>omiGlass 知识点分类</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
+
+<style>
+  :root {
+    --paper:       #F3F6F7;
+    --surface:     #FFFFFF;
+    --surface-2:   #E9EFF1;
+    --ink:         #15202A;
+    --ink-2:       #3C4B55;
+    --muted:       #667680;
+    --rule:        #D7DFE4;
+    --rule-strong: #B7C4CB;
+    --accent:      #0B6E7F;
+    --accent-ink:  #085663;
+    --accent-soft: #DCEAEE;
+    --warm:        #A94F1C;
+    --warm-soft:   #F5E4D9;
+    --code-bg:     #EDF2F4;
+    --code-ink:    #1B2A34;
+
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body:    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --f-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --step-0: 1rem;
+    --step-1: 1.14rem;
+    --step-2: 1.32rem;
+    --step-3: 1.7rem;
+    --step-4: 2.2rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:       #0E1519;
+      --surface:     #151F25;
+      --surface-2:   #1D282F;
+      --ink:         #E1E9EC;
+      --ink-2:       #B2C1C8;
+      --muted:       #8496A0;
+      --rule:        #26343C;
+      --rule-strong: #384852;
+      --accent:      #46BACA;
+      --accent-ink:  #6FD0DD;
+      --accent-soft: #14323A;
+      --warm:        #E0935D;
+      --warm-soft:   #38251A;
+      --code-bg:     #111A1F;
+      --code-ink:    #CDDBE1;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:       #0E1519;
+    --surface:     #151F25;
+    --surface-2:   #1D282F;
+    --ink:         #E1E9EC;
+    --ink-2:       #B2C1C8;
+    --muted:       #8496A0;
+    --rule:        #26343C;
+    --rule-strong: #384852;
+    --accent:      #46BACA;
+    --accent-ink:  #6FD0DD;
+    --accent-soft: #14323A;
+    --warm:        #E0935D;
+    --warm-soft:   #38251A;
+    --code-bg:     #111A1F;
+    --code-ink:    #CDDBE1;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: var(--step-0);
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  .masthead { padding: 3.5rem 0 0; border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem; }
+  .eyebrow {
+    font-family: var(--f-mono); font-size: .72rem; font-weight: 500;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 1rem;
+  }
+  h1 {
+    font-family: var(--f-display); font-weight: 700;
+    font-size: clamp(2rem, 5vw, var(--step-4)); line-height: 1.1;
+    letter-spacing: -.02em; margin: 0 0 .75rem; text-wrap: balance;
+  }
+  .standfirst { max-width: var(--measure); color: var(--ink-2); font-size: var(--step-1); margin: 0 0 2rem; }
+  .masthead-meta {
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem;
+    font-family: var(--f-mono); font-size: .74rem; color: var(--muted); padding-bottom: 1.25rem;
+  }
+  .masthead-meta b { color: var(--ink-2); font-weight: 500; }
+
+  /* ---------- category grid ---------- */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: .6rem; margin: 0 0 2.5rem;
+  }
+  .cat {
+    display: flex; flex-direction: column; gap: .3rem;
+    padding: .9rem 1rem; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 3px solid var(--rule-strong);
+    border-radius: 0 2px 2px 0; text-decoration: none; color: inherit;
+    transition: border-color .15s, background .15s;
+  }
+  .cat:hover, .cat:focus-visible {
+    border-left-color: var(--accent); background: var(--accent-soft); outline: none;
+  }
+  .cat .cn {
+    font-family: var(--f-mono); font-size: .68rem; font-weight: 600;
+    color: var(--accent); letter-spacing: .1em;
+  }
+  .cat .ct { font-family: var(--f-display); font-weight: 600; font-size: .96rem; line-height: 1.25; }
+  .cat .cd { font-family: var(--f-mono); font-size: .68rem; color: var(--muted); }
+
+  /* ---------- layout ---------- */
+  .layout {
+    display: grid; grid-template-columns: 14rem minmax(0, 1fr);
+    gap: 3.5rem; align-items: start;
+  }
+  @media (max-width: 940px) { .layout { grid-template-columns: minmax(0, 1fr); gap: 2rem; } }
+
+  .toc { position: sticky; top: 1.5rem; font-size: .84rem; }
+  @media (max-width: 940px) {
+    .toc { position: static; border-bottom: 1px solid var(--rule); padding-bottom: 1.25rem; }
+  }
+  .toc h2 {
+    font-family: var(--f-mono); font-size: .68rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 .7rem;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .1rem; }
+  .toc a {
+    display: flex; gap: .55rem; padding: .3rem .4rem; color: var(--ink-2);
+    text-decoration: none; border-left: 2px solid transparent; border-radius: 0 2px 2px 0;
+  }
+  .toc a:hover, .toc a:focus-visible {
+    color: var(--accent); background: var(--accent-soft);
+    border-left-color: var(--accent); outline: none;
+  }
+  .toc .num { font-family: var(--f-mono); font-size: .7rem; color: var(--muted); padding-top: .12rem; }
+
+  /* ---------- sections ---------- */
+  .part { margin: 0 0 4rem; scroll-margin-top: 1.5rem; }
+  .part-head {
+    display: flex; align-items: baseline; gap: .8rem;
+    padding-bottom: .6rem; border-bottom: 2px solid var(--ink); margin-bottom: .35rem;
+  }
+  .part-head .pn { font-family: var(--f-mono); font-size: .8rem; font-weight: 600; color: var(--accent); }
+  .part-head h2 {
+    font-family: var(--f-display); font-weight: 700; font-size: var(--step-3);
+    letter-spacing: -.015em; margin: 0; text-wrap: balance;
+  }
+  .part-sub { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); margin: 0 0 2rem; }
+
+  .kp { padding: 1.6rem 0 1.9rem; border-bottom: 1px solid var(--rule); scroll-margin-top: 1.5rem; }
+  .kp:last-child { border-bottom: none; }
+  .kp h3 {
+    display: flex; gap: .7rem; align-items: baseline;
+    font-family: var(--f-display); font-weight: 600; font-size: var(--step-2);
+    line-height: 1.3; letter-spacing: -.01em; margin: 0 0 .9rem; text-wrap: balance;
+  }
+  .kp h3 .kid {
+    flex: none; font-family: var(--f-mono); font-size: .72rem; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft); border-radius: 2px;
+    padding: .18rem .4rem; letter-spacing: .03em;
+  }
+  .kp p { max-width: var(--measure); margin: 0 0 .9rem; }
+  .kp ul, .kp ol { max-width: var(--measure); padding-left: 1.3rem; margin: 0 0 .9rem; }
+  .kp li { margin-bottom: .35rem; }
+  .kp li:last-child { margin-bottom: 0; }
+
+  strong { font-weight: 600; color: var(--ink); }
+  em { font-style: italic; color: var(--ink-2); }
+
+  code {
+    font-family: var(--f-mono); font-size: .86em; background: var(--code-bg);
+    color: var(--code-ink); padding: .1em .34em; border-radius: 2px; word-break: break-word;
+  }
+  pre {
+    font-family: var(--f-mono); font-size: .8rem; line-height: 1.62;
+    background: var(--code-bg); color: var(--code-ink);
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    border-radius: 2px; padding: 1rem 1.15rem; margin: 0 0 1rem;
+    overflow-x: auto;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+  .coderef {
+    font-family: var(--f-mono); font-size: .72rem; font-weight: 500;
+    color: var(--accent-ink); background: var(--accent-soft);
+    display: inline-block; padding: .12rem .45rem; border-radius: 2px;
+    margin: 0 0 .4rem; letter-spacing: .02em;
+  }
+
+  .diagram {
+    font-family: var(--f-mono); font-size: .76rem; line-height: 1.5;
+    background: var(--surface); color: var(--ink-2);
+    border: 1px solid var(--rule); border-radius: 2px;
+    padding: 1.1rem 1.15rem; margin: 0 0 1rem;
+    overflow-x: auto; white-space: pre;
+  }
+
+  .table-wrap {
+    margin: 0 0 1.25rem; overflow-x: auto;
+    border: 1px solid var(--rule); border-radius: 2px; background: var(--surface);
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .86rem; font-variant-numeric: tabular-nums; }
+  .table-wrap table { min-width: 26rem; }
+  th, td { text-align: left; padding: .5rem .7rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--f-mono); font-size: .72rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--rule-strong); white-space: nowrap; background: var(--surface-2);
+  }
+  tbody tr:hover { background: var(--surface-2); }
+  td code { white-space: nowrap; }
+
+  .note, .key, .summary {
+    max-width: var(--measure); padding: .8rem 1rem; margin: 0 0 1rem;
+    border-radius: 0 2px 2px 0; font-size: .92rem;
+  }
+  .note { border-left: 3px solid var(--warm); background: var(--warm-soft); }
+  .note strong { color: var(--warm); }
+  .key  { border-left: 3px solid var(--accent); background: var(--accent-soft); }
+  .key strong { color: var(--accent-ink); }
+  .summary { border: 1px solid var(--rule); border-left: 3px solid var(--ink); background: var(--surface); }
+  .summary::before {
+    content: "要点"; display: block; font-family: var(--f-mono); font-size: .66rem;
+    font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: .35rem;
+  }
+
+  .math {
+    font-family: var(--f-mono); font-size: .84rem; background: var(--surface);
+    border: 1px solid var(--rule); border-radius: 2px;
+    padding: .7rem 1rem; margin: 0 0 1rem; overflow-x: auto; white-space: pre;
+    color: var(--ink-2);
+  }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+    font-family: var(--f-mono); font-size: .74rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: .4rem 1.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">分类复习 · omi-main/omiGlass/firmware</p>
+    <h1>omiGlass 知识点分类</h1>
+    <p class="standfirst">
+      把散落在一条数据流上的 43 个问题，按<b>知识领域</b>重新归堆。
+      每个知识点都附着项目里的<b>实际代码</b>——概念和实现对不上时，看代码。
+    </p>
+    <div class="masthead-meta">
+      <span><b>7</b> 大类</span>
+      <span><b>35</b> 个知识点</span>
+      <span><b>43</b> 个原始问题</span>
+      <span>ESP32-S3 · PDM · DMA · Opus · BLE</span>
+    </div>
+  </header>
+
+  <nav class="cat-grid" aria-label="知识类别">
+    <a class="cat" href="#c1"><span class="cn">一</span><span class="ct">信号与采样基础</span><span class="cd">6 个知识点</span></a>
+    <a class="cat" href="#c2"><span class="cn">二</span><span class="ct">I2S 与 DMA 硬件层</span><span class="cd">11 个知识点</span></a>
+    <a class="cat" href="#c3"><span class="cn">三</span><span class="ct">音频处理与增益</span><span class="cd">1 个知识点</span></a>
+    <a class="cat" href="#c4"><span class="cn">四</span><span class="ct">环形缓冲</span><span class="cd">6 个知识点</span></a>
+    <a class="cat" href="#c5"><span class="cn">五</span><span class="ct">Opus 编码与码率</span><span class="cd">9 个知识点</span></a>
+    <a class="cat" href="#c6"><span class="cn">六</span><span class="ct">软件架构：回调与并发</span><span class="cd">4 个知识点</span></a>
+    <a class="cat" href="#c7"><span class="cn">七</span><span class="ct">BLE 发送与协议</span><span class="cd">1 个知识点</span></a>
+  </nav>
+
+  <div class="layout">
+
+    <nav class="toc" aria-label="目录">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#c1"><span class="num">一</span><span>信号与采样基础</span></a></li>
+        <li><a href="#c2"><span class="num">二</span><span>I2S 与 DMA 硬件层</span></a></li>
+        <li><a href="#c3"><span class="num">三</span><span>音频处理与增益</span></a></li>
+        <li><a href="#c4"><span class="num">四</span><span>环形缓冲</span></a></li>
+        <li><a href="#c5"><span class="num">五</span><span>Opus 编码与码率</span></a></li>
+        <li><a href="#c6"><span class="num">六</span><span>回调与并发</span></a></li>
+        <li><a href="#c7"><span class="num">七</span><span>BLE 发送与协议</span></a></li>
+        <li><a href="#appendix"><span class="num">—</span><span>附录：跨类别易错点</span></a></li>
+      </ol>
+    </nav>
+
+    <main>
+
+      <!-- ================= 一 ================= -->
+      <section class="part" id="c1">
+        <div class="part-head"><span class="pn">一</span><h2>信号与采样基础</h2></div>
+        <p class="part-sub">PDM 的性质 · 位深 · 采样率 · 过采样 · 单位换算</p>
+
+        <article class="kp">
+          <h3><span class="kid">1.1</span>PDM 是什么？</h3>
+          <p><strong>Pulse Density Modulation（脉冲密度调制）</strong>——用「1 的疏密」表示幅度，是数字 MEMS 麦克风的默认输出格式。幅度不在单比特的<em>值</em>里，而在一段比特的<em>密度</em>里。</p>
+          <p class="coderef">mic.cpp:45-57 · PDM 模式就体现在 mode 这一个标志位上</p>
+          <div class="scroll"><pre><code>i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_PDM),  // ← PDM 模式
+    .sample_rate = MIC_SAMPLE_RATE,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count = 8,
+    .dma_buf_len = 256,
+    .use_apll = false,
+    .tx_desc_auto_clear = false,
+    .fixed_mclk = 0,
+};</code></pre></div>
+          <p class="coderef">mic.cpp:60-65 · 引脚印证 PDM 的双线特征——ws_io_num 被复用成 PDM 时钟</p>
+          <div class="scroll"><pre><code>i2s_pin_config_t pin_config = {
+    .bck_io_num = I2S_PIN_NO_CHANGE,
+    .ws_io_num = MIC_CLK_PIN,   // PDM CLK
+    .data_out_num = I2S_PIN_NO_CHANGE,
+    .data_in_num = MIC_DATA_PIN, // PDM DATA
+};</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>波形位置</th><th>PDM 位流（16 bit 窗口）</th><th>1 的比例</th><th>代表幅度</th></tr></thead>
+              <tbody>
+                <tr><td>波峰</td><td><code>1111111111111111</code></td><td>100%</td><td>正向满量程</td></tr>
+                <tr><td>上升</td><td><code>1111111111110000</code></td><td>75%</td><td>+50%</td></tr>
+                <tr><td>零点</td><td><code>1111111100000000</code></td><td>50%</td><td>0（静音）</td></tr>
+                <tr><td>波谷</td><td><code>0000000000000000</code></td><td>0%</td><td>负向满量程</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">PDM 是「快而粗」（1 bit 高速），PCM 是「慢而精」（16 bit 低速）。转换在硬件里完成。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">1.2</span>PDM 的 1 bit 怎么变成 16 bit？</h3>
+          <p>在时间窗口内<strong>数密度</strong>：把 1 记 +1、0 记 −1，对窗口求和。硬件里是<strong>抽取滤波器</strong>（低通 + 降采样），常用 CIC（级联积分梳状）实现。</p>
+          <p class="coderef">mic.cpp:48 · bits_per_sample 就是「抽取后的输出位宽」</p>
+          <div class="scroll"><pre><code>.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,   // ← 1-bit 进，16-bit 出</code></pre></div>
+          <p class="coderef">mic.cpp:121-125 · 抽出来的结果直接就是 int16_t</p>
+          <div class="scroll"><pre><code>i2s_read(I2S_PORT, i2s_read_buffer, MIC_BUFFER_SAMPLES * sizeof(int16_t), &amp;bytes_read, pdMS_TO_TICKS(20));
+
+if (err == ESP_OK &amp;&amp; bytes_read &gt; 0) {
+    size_t samples_read = bytes_read / sizeof(int16_t);   // ← 已经是可以直接用的 PCM 了</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>64 个 bit 的情况</th><th>1 的个数</th><th>求和</th><th>还原幅度</th></tr></thead>
+              <tbody>
+                <tr><td>全是 1</td><td>64</td><td>+64</td><td>+满量程</td></tr>
+                <tr><td>一半 1 一半 0</td><td>32</td><td>0</td><td>0</td></tr>
+                <tr><td>全是 0</td><td>0</td><td>−64</td><td>−满量程</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary"><code>i2s_read</code> 拿到的已经是 16-bit PCM，<strong>PDM 从不出现在软件层</strong>。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">1.3</span>采样率：输入与输出不一样</h3>
+          <p>PDM 输入的速率单位是 <strong>bit/s</strong>（~MHz），抽取输出的单位是 <strong>样本/s</strong>（16 kHz）。两者由<strong>过采样率 OSR</strong> 关联。</p>
+          <p class="coderef">config.h:129-130 · 只有「输出侧」的 16 kHz 出现在配置里</p>
+          <div class="scroll"><pre><code>#define MIC_SAMPLE_RATE 16000          // 16kHz sample rate
+#define MIC_BUFFER_SAMPLES 1600        // 100ms buffer (16000 * 0.1)</code></pre></div>
+          <div class="key"><strong>注意 1600 就是 <code>16000 × 0.1</code> 算出来的</strong>——采样率决定「100ms 等于多少样本」。<code>MIC_SAMPLE_RATE</code> 是<strong>抽取之后</strong>的 PCM 采样率；PDM 时钟由外设按 OSR 反推，代码里不用你算。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">1.4</span>为什么 PDM 流要乘以 64？</h3>
+          <p>16 kHz 是<strong>你要求的规格</strong>，×64 是<strong>硬件满足它付出的代价</strong>。1 bit 表示不了幅度（只有 ~6 dB 信噪比），所以用「过采样 + 噪声整形」换精度。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>做法（64× 过采样）</th><th>有效精度</th></tr></thead>
+              <tbody>
+                <tr><td>只有过采样</td><td>~4 bit ✗（要凑 16 bit 需 2¹⁶ 倍过采样，不现实）</td></tr>
+                <tr><td>一阶噪声整形</td><td>~9 bit</td></tr>
+                <tr><td><strong>二阶噪声整形</strong>（主流 MEMS）</td><td><strong>~14 bit</strong> ✓</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">交易本质是「<strong>比特率下降（1.024 Mbit/s → 256 kbit/s），但每样本位数上升（1 bit → 16 bit）</strong>」——用快而粗换慢而精。</div>
+          <div class="note"><strong>纠错：</strong>ESP32-S3 的硬件下采样器有自己档位（ESP-IDF <code>i2s_pdm_dsr_t</code> 的 <code>DSR_8S</code>/<code>DSR_16S</code>），PDM 时钟是采样率的<strong>十几到几十倍</strong>，<strong>不是固定 64×</strong>。64× 是通用 PDM 麦克风的典型值。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">1.5</span>16 kHz 是 16000 个样本，不是 16000 个包</h3>
+          <p>三个层次要分清——<strong>样本</strong>（sample）→ <strong>帧</strong>（frame）→ <strong>包</strong>（packet）。</p>
+          <p class="coderef">config.h:129 / 138 / 146 · 三个常量正好对应这三层</p>
+          <div class="scroll"><pre><code>#define MIC_SAMPLE_RATE 16000          // 采样率：每秒 16000 个【样本】
+#define OPUS_FRAME_SAMPLES 320         // 帧长：每 320 个样本凑一【帧】(20ms)
+#define AUDIO_TX_RING_BUFFER_SIZE 16   // 发送环：缓冲 16 个【包】</code></pre></div>
+          <div class="diagram">16000 样本/秒 ÷ 320 样本/帧 = 50 帧/秒
+50 帧/秒 → Opus 压缩 → 50 个 BLE 包/秒   ← 不是 16000 个包！</div>
+          <div class="summary">采样率 ≠ 发送率。中间隔着「320 分组」和「Opus 压缩」两道工序。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">1.6</span><code>bits_per_sample</code> 是什么？</h3>
+          <p>它说的是<strong>抽取之后的输出位宽</strong>（16 位），不是 PDM 的 1 位。它把整条链路的类型钉死成 <code>int16_t</code>。</p>
+          <p class="coderef">mic.cpp:48 · I2S 输出位宽</p>
+          <div class="scroll"><pre><code>.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:76 · 告诉 Opus 输入位深</p>
+          <div class="scroll"><pre><code>opus_encoder_ctl(encoder, OPUS_SET_LSB_DEPTH(16));</code></pre></div>
+          <p class="coderef">mic.cpp:132-135 · 限幅边界就是 int16 的范围</p>
+          <div class="scroll"><pre><code>if (sample &gt; 32767)  sample = 32767;
+if (sample &lt; -32768) sample = -32768;</code></pre></div>
+          <div class="summary">改成 32 位的话，这三处（以及缓冲分配 <code>sizeof(int16_t)</code>）<strong>必须一起改</strong>，否则音频变噪声。</div>
+        </article>
+      </section>
+
+      <!-- ================= 二 ================= -->
+      <section class="part" id="c2">
+        <div class="part-head"><span class="pn">二</span><h2>I2S 与 DMA 硬件层</h2></div>
+        <p class="part-sub">芯片内部 · 环形缓冲的硬件实现 · 轮询与超时</p>
+
+        <article class="kp">
+          <h3><span class="kid">2.1</span>为什么 16 kHz 要配 100 ms 缓冲？</h3>
+          <p>先定「时长」，再乘以采样率得「样本数」。100 ms 是配合主循环抖动、DMA 深度、Opus 帧长三方折中的结果。</p>
+          <p class="coderef">config.h:129-132 · 1600 就是 16000 × 0.1</p>
+          <div class="scroll"><pre><code>#define MIC_SAMPLE_RATE 16000          // 16kHz sample rate
+#define MIC_BUFFER_SAMPLES 1600        // 100ms buffer (16000 * 0.1)
+#define MIC_GAIN 2                     // Microphone gain multiplier
+#define AUDIO_RING_BUFFER_SAMPLES 8000 // 500ms of audio data</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>约束</th><th>数值</th><th>关系</th></tr></thead>
+              <tbody>
+                <tr><td>DMA 硬件深度</td><td>8 × 256 = 2048 样本 = <strong>128 ms</strong></td><td>100 ms 要 ≤ 它</td></tr>
+                <tr><td>Opus 帧长</td><td>320 样本 = 20 ms</td><td>100 ms 要能被 20 整除</td></tr>
+                <tr><td>主循环周期</td><td>~25~30 ms</td><td>100 ms 要远大于它</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary"><strong>100 ms 是选定的延迟目标，1600 是它的算术结果。</strong></div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.2</span>三个 I2S 配置项</h3>
+          <p>前一个是线路协议格式（PDM 下基本不起作用），后两个共同定义<strong>硬件环形缓冲的容量</strong>。</p>
+          <p class="coderef">mic.cpp:50-53</p>
+          <div class="scroll"><pre><code>.communication_format = I2S_COMM_FORMAT_STAND_I2S,   // ① 线路时序格式
+.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+.dma_buf_count = 8,                                  // ② 环分几块
+.dma_buf_len = 256,                                  // ③ 每块多少样本</code></pre></div>
+          <div class="math">容量 = ② × ③ = 8 × 256 = 2048 样本 = 2048 ÷ 16000 ≈ 128 ms</div>
+          <div class="summary">① 在 PDM 模式下是<strong>摆设</strong>——PDM 不用 I2S 那套「WS 分左右声道 + BCK 逐位对齐」的框架，只有一条数据线。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.3</span>DMA 的作用</h3>
+          <p>硬件搬运工，<strong>不占用 CPU</strong> 地把外设数据搬进内存。让 CPU 和采样时钟<strong>解耦</strong>。</p>
+          <p class="coderef">mic.cpp:68 · i2s_driver_install 就是分配 DMA 的地方</p>
+          <div class="scroll"><pre><code>esp_err_t err = i2s_driver_install(I2S_PORT, &amp;i2s_config, 0, NULL);
+//                                                          ↑ ↑
+//                                          queue_size=0 ─┘ └─ 无事件队列 → 纯轮询</code></pre></div>
+          <p class="coderef">mic.cpp:82 · 清空 DMA 缓冲</p>
+          <div class="scroll"><pre><code>i2s_zero_dma_buffer(I2S_PORT);</code></pre></div>
+          <div class="key">CPU 因照片 BLE 上传等卡住时，DMA 照填；CPU 回来一次性排空。<strong>卡顿 &lt; 128 ms 就一帧不丢</strong>，超过就绕回覆盖最旧数据 → 丢样。</div>
+          <div class="summary">这 128ms 是<strong>给 CPU 抖动买的保险</strong>，衡量单位是「能扛住多长时间的阻塞」。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.4</span>DMA 是「双缓冲队列」吗？</h3>
+          <p><strong>不是。</strong><code>dma_buf_count = 8</code> 是 <strong>8 缓冲环形队列</strong>。双缓冲（N=2 乒乓）是它的特例。</p>
+          <p class="coderef">mic.cpp:52-53</p>
+          <div class="scroll"><pre><code>.dma_buf_count = 8,     // ← 8 个，不是 2
+.dma_buf_len = 256,</code></pre></div>
+          <p>同一个「生产者/消费者解耦」模式在项目里<strong>重复了三次</strong>：</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>层</th><th>位置</th><th>容量</th><th>解耦谁和谁</th></tr></thead>
+              <tbody>
+                <tr><td>① DMA 环</td><td><code>mic.cpp:52</code></td><td>8 × 256 = 2048 样本 / 128 ms</td><td>麦克风硬件 ↔ CPU</td></tr>
+                <tr><td>② PCM 环</td><td><code>opus_encoder.cpp:13,31</code></td><td>8000 样本 / 500 ms</td><td>麦克风回调 ↔ Opus 编码器</td></tr>
+                <tr><td>③ 发送环</td><td><code>app.cpp:83</code></td><td>16 × 162 字节</td><td>Opus 编码器 ↔ BLE 发送</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary"><strong>越往下游容量越大</strong>，因为卡顿来源越不可控。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.5</span>DMA 相关代码在哪？</h3>
+          <p>DMA 环<strong>本身不在项目里</strong>——是 ESP-IDF 驱动 <code>i2s_driver_install()</code> 时 malloc 的。项目只做四件事。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>步骤</th><th>位置</th><th>代码</th></tr></thead>
+              <tbody>
+                <tr><td>配置</td><td><code>mic.cpp:52-53</code></td><td><code>.dma_buf_count = 8, .dma_buf_len = 256</code></td></tr>
+                <tr><td>安装（真正分配）</td><td><code>mic.cpp:68</code></td><td><code>i2s_driver_install(I2S_PORT, &amp;i2s_config, 0, NULL)</code></td></tr>
+                <tr><td>清空</td><td><code>mic.cpp:82</code></td><td><code>i2s_zero_dma_buffer(I2S_PORT)</code></td></tr>
+                <tr><td><strong>读出</strong></td><td><strong><code>mic.cpp:122</code></strong></td><td><code>i2s_read(...)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="coderef">mic.cpp:114-144 · 读出的完整代码</p>
+          <div class="scroll"><pre><code>void mic_process()
+{
+    if (!mic_running || i2s_read_buffer == nullptr) {
+        return;
+    }
+
+    size_t bytes_read = 0;
+    esp_err_t err =
+        i2s_read(I2S_PORT, i2s_read_buffer, MIC_BUFFER_SAMPLES * sizeof(int16_t), &amp;bytes_read, pdMS_TO_TICKS(20));
+
+    if (err == ESP_OK &amp;&amp; bytes_read &gt; 0) {
+        size_t samples_read = bytes_read / sizeof(int16_t);
+
+        if (MIC_GAIN != 1) {
+            for (size_t i = 0; i &lt; samples_read; i++) {
+                int32_t sample = (int32_t) i2s_read_buffer[i] * MIC_GAIN;
+                if (sample &gt; 32767)  sample = 32767;
+                if (sample &lt; -32768) sample = -32768;
+                i2s_read_buffer[i] = (int16_t) sample;
+            }
+        }
+
+        if (audio_callback != nullptr) {
+            audio_callback(i2s_read_buffer, samples_read);
+        }
+    }
+}</code></pre></div>
+          <div class="summary"><strong><code>i2s_read</code> 那一行就是把数据从 DMA 环取出来的唯一地方。</strong></div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.6</span>DMA 搬的是 PDM 还是 PCM？</h3>
+          <p><strong>搬的是已经处理好的 16-bit PCM。</strong>转换在 DMA <strong>之前</strong>，由 I2S 外设的硬件 sinc 滤波器完成。</p>
+          <p><strong>证据 1</strong>——ESP32-S3 TRM 有寄存器 <code>I2S_RX_PDM_SINC_DSR_16_EN</code>，文档原文「配置 <strong>PDM RX 滤波器组</strong> 模块的<strong>下采样率</strong>」。</p>
+          <p><strong>证据 2</strong>——<code>dma_buf_len</code> 的单位是<strong>样本</strong>，代码里也是这么用的：</p>
+          <p class="coderef">mic.cpp:122 · <code>* sizeof(int16_t)</code> 这个乘法本身就说明问题</p>
+          <div class="scroll"><pre><code>i2s_read(I2S_PORT, i2s_read_buffer, MIC_BUFFER_SAMPLES * sizeof(int16_t), &amp;bytes_read, pdMS_TO_TICKS(20));
+//                                 ↑ 1600【样本】= 3200 字节，不是 1600 个 bit</code></pre></div>
+          <p><strong>为什么 DMA 不可能搬原始 PDM：</strong></p>
+          <ol>
+            <li>DMA 的搬运单位是<strong>字</strong>不是<strong>位</strong></li>
+            <li>PDM 只存在于引脚和移位寄存器里，<strong>不在内存总线上</strong></li>
+            <li>让 CPU 做抽取滤波是<strong>巨大浪费</strong></li>
+          </ol>
+          <div class="summary"><strong>PCM 是软件世界的通用货币，PDM 不是。</strong>转换放在硬件边界的意义是让 DMA 之后的一切只说一种语言。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.7</span><code>i2s_read</code> 是一次把 8×256 全读出来吗？</h3>
+          <p><strong>不是。</strong>一次最多读 <strong>1600 个样本</strong>（请求上限），实际通常只有几百个。</p>
+          <p class="coderef">mic.cpp:121-122 · 三个数字的角色不同</p>
+          <div class="scroll"><pre><code>i2s_read(I2S_PORT,
+         i2s_read_buffer,
+         MIC_BUFFER_SAMPLES * sizeof(int16_t),   // ← 请求上限：1600 样本（不是 2048！）
+         &amp;bytes_read,                            // ← 输出：实际读了多少
+         pdMS_TO_TICKS(20));                     // ← 最多等 20ms</code></pre></div>
+          <div class="diagram">DMA 总容量   2048 样本 (128ms)   ← 【库存】，不在读取参数里
+请求上限     1600 样本 (100ms)   ← 一次最多读多少
+20ms 实际产出 320 样本            ← 通常实际读到多少</div>
+          <p class="coderef">mic.cpp:125 · 用的是 bytes_read（实际值）而不是硬编码 1600</p>
+          <div class="scroll"><pre><code>size_t samples_read = bytes_read / sizeof(int16_t);   // ← 值是可变的</code></pre></div>
+          <div class="summary"><strong>DMA 是「持续旋转的环」，不是「填满再倒空」</strong>。<code>i2s_read</code> 只推进读指针，写指针完全不受影响。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.8</span><code>i2s_read</code> 的超时是什么情况？</h3>
+          <p>它是<strong>带截止时间的阻塞调用</strong>。超时<strong>不是出错</strong>，而是「有多少给多少」。</p>
+          <p class="coderef">mic.cpp:122 · Arduino-ESP32 的 CONFIG_FREERTOS_HZ=1000 → 精确 20ms</p>
+          <div class="scroll"><pre><code>pdMS_TO_TICKS(20)</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>情况</th><th>耗时</th><th>bytes_read</th></tr></thead>
+              <tbody>
+                <tr><td>数据早就在 DMA 里等着</td><td>~0</td><td>3200（满额）</td></tr>
+                <tr><td>等到攒满</td><td>&lt; 20ms</td><td>3200（满额）</td></tr>
+                <tr><td><strong>20ms 到了还没攒满</strong></td><td><strong>= 20ms</strong></td><td><strong>部分</strong> ← 常态</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="math">20 ms × 16 样本/ms = 320 个样本  ≪  1600
+攒满 1600 要 100ms，超时只有 20ms → 超时永远先到</div>
+          <p class="coderef">mic.cpp:124 · <code>err == ESP_OK</code> 挡住「一个字节都没来」的情况</p>
+          <div class="scroll"><pre><code>if (err == ESP_OK &amp;&amp; bytes_read &gt; 0) {</code></pre></div>
+          <div class="summary">等待期间任务是<strong>挂起（sleep）</strong>的，CPU 让给 NimBLE 协议栈等任务——所以这 20ms 不浪费。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.9</span>DMA 会不会「放满」？</h3>
+          <p>「放满」有两个意思——① DMA 里有没有数据（<strong>永远有</strong>）；② 会不会溢出覆盖未读数据（<strong>正常不会</strong>）。</p>
+          <p>关键在于 <code>mic.cpp:122</code> 的 20ms 超时决定了每次只取走几百个，<strong>软件在持续小批量排空</strong>。</p>
+          <div class="diagram">水位
+ 480 ┤      ╱╲          ╱╲          ╱╲
+     │     ╱  ╲        ╱  ╲        ╱  ╲     ← 每轮排空一次
+   0 ┤────╱────╲──────╱────╲──────╱────╲──
+2048 ┼─────────────────────────────────────  ← 容量线，差得远</div>
+          <div class="summary">不会溢出的原因<strong>不是「1600 &lt; 2048」这个静态算术</strong>，而是<strong>软件持续排空</strong>。2048 那份余量的真正作用，是容忍最长 <strong>128 ms</strong> 的 CPU 卡顿。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.10</span>DMA 取数据的速率是多少？</h3>
+          <p><strong>三个不同的速率</strong>别混。DMA 不是「定时取」，而是 <strong>FIFO 水位触发的突发搬运</strong>。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>阶段</th><th>速率</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td>① PDM 流 → I2S 外设</td><td>PDM 时钟（~MHz）</td><td>每个时钟沿进 1 bit</td></tr>
+                <tr><td>② 抽取输出 → DMA 环</td><td><strong>16 kHz</strong></td><td><strong>每 62.5 µs 产生 1 个样本</strong></td></tr>
+                <tr><td>③ DMA 环 → <code>i2s_read_buffer</code></td><td><strong>~25~30 ms 一次</strong></td><td>每次几百个样本</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="coderef">app.cpp:1003-1009 · ③ 的速率由主循环决定</p>
+          <div class="scroll"><pre><code>// Adaptive delays for power saving (gentle optimization)
+if (photoDataUploading || audioSubscribed) {
+    delay(5); // Fast during upload or audio streaming
+} else if (powerSaveMode) {
+    delay(50);
+} else {
+    delay(50);
+}</code></pre></div>
+          <p class="coderef">app.cpp:883-886 · 每轮主循环调用一次</p>
+          <div class="scroll"><pre><code>if (audioEnabled &amp;&amp; mic_is_running()) {
+    mic_process();      // ← 每轮主循环调用一次（≈25~30ms）
+    opus_process();
+}</code></pre></div>
+          <div class="summary"><strong>DMA 不写 <code>i2s_read_buffer</code></strong>——它写硬件环；<code>i2s_read_buffer</code> 是 <code>i2s_read()</code> <strong>拷</strong>过来的目的地。<strong>不是 100ms 一次</strong>——100ms 只是「1600 样本」对应的时间上限，实际永远达不到。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">2.11</span>DMA 参数可以改成 <code>count=4, len=512</code> 吗？</h3>
+          <p><strong>可以。</strong>总量不变、抗抖动能力不变，只是<strong>粒度变粗</strong>。</p>
+          <p class="coderef">mic.cpp:52-53</p>
+          <div class="scroll"><pre><code>.dma_buf_count = 8,     // 改成 4
+.dma_buf_len = 256,     // 改成 512 —— 总量仍是 2048 样本</code></pre></div>
+          <p>能过驱动检查——ESP-IDF 的约束是 <code>dma_buf_len ∈ [8, 1024]</code>：</p>
+          <div class="scroll"><pre><code>I2S_CHECK((i2s_config-&gt;dma_buf_len &gt;= 8 &amp;&amp; i2s_config-&gt;dma_buf_len &lt;= 1024),
+          "I2S buffer length at most 1024 and more than 8", ...);</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>参数</th><th>8 × 256（当前）</th><th>4 × 512</th></tr></thead>
+              <tbody>
+                <tr><td>总容量</td><td>2048 样本</td><td><strong>2048 样本</strong> ✓</td></tr>
+                <tr><td>缓冲时间</td><td>128 ms</td><td><strong>128 ms</strong> ✓</td></tr>
+                <tr><td>描述符数</td><td>8</td><td>4</td></tr>
+                <tr><td>粒度</td><td>细</td><td><strong>粗</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">硬件上也没问题（ESP32 DMA 描述符单块最大 4095 字节，1024 字节远在其内）。但 <code>8 × 256</code> 是常见安全默认值，<strong>没有实测需求不必改</strong>。</div>
+        </article>
+      </section>
+
+      <!-- ================= 三 ================= -->
+      <section class="part" id="c3">
+        <div class="part-head"><span class="pn">三</span><h2>音频处理与增益</h2></div>
+        <p class="part-sub">数据进入软件后的第一道加工</p>
+
+        <article class="kp">
+          <h3><span class="kid">3.1</span><code>MIC_GAIN</code> 增益放大的过程</h3>
+          <p>软件数字增益，把每个样本乘一个常数。<strong>必须用 <code>int32_t</code> 中间变量</strong>，否则溢出会把正峰值<strong>反转成负峰值</strong>。</p>
+          <p class="coderef">config.h:131</p>
+          <div class="scroll"><pre><code>#define MIC_GAIN 2                     // Microphone gain multiplier</code></pre></div>
+          <p class="coderef">mic.cpp:127-138 · 完整过程</p>
+          <div class="scroll"><pre><code>if (MIC_GAIN != 1) {
+    for (size_t i = 0; i &lt; samples_read; i++) {
+        int32_t sample = (int32_t) i2s_read_buffer[i] * MIC_GAIN;   // ① 转 int32 防溢出
+        if (sample &gt; 32767)  sample = 32767;                        // ② 正向限幅
+        if (sample &lt; -32768) sample = -32768;                       // ③ 负向限幅
+        i2s_read_buffer[i] = (int16_t) sample;                      // ④ 写回原缓冲（就地修改）
+    }
+}</code></pre></div>
+          <h4 style="font-family:var(--f-display);font-weight:600;font-size:1rem;margin:1.25rem 0 .6rem;">为什么必须转 <code>int32_t</code></h4>
+          <div class="diagram">sample = 20000（一个很响的声音）
+
+❌ 直接 int16_t 相乘：
+   20000 × 2 = 40000，但 int16_t 最大 32767
+   40000 按 16 位截断 = 40000 − 65536 = −25536
+   ↑ 【正的大声音变成负的大声音】—— 听感是剧烈爆音"啪"
+
+✅ 转 int32 再限幅：
+   (int32_t)20000 × 2 = 40000     ← 32 位里完全正常
+   40000 &gt; 32767 → 限幅到 32767    ← 削波，但【方向是对的】</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>溢出反转</th><th>限幅削波</th></tr></thead>
+              <tbody>
+                <tr><td>波形</td><td>峰值<strong>翻到反方向</strong></td><td>峰值<strong>被削平</strong></td></tr>
+                <tr><td>听感</td><td>剧烈爆音 ✗</td><td>轻微失真 ✓</td></tr>
+                <tr><td>原因</td><td>没转宽类型</td><td>int32 + clamp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <ul>
+            <li><strong>2 倍 = +6 dB</strong>（<code>20·log₁₀(2) = 6.02</code>）</li>
+            <li><strong>信号和噪声一起放大</strong> → 信噪比不变，<strong>不能改善音质</strong>（这和「麦克风硬件增益」不同）</li>
+            <li><strong>就地修改</strong> <code>i2s_read_buffer</code> → 回调收到的是<strong>已放大</strong>的数据</li>
+          </ul>
+          <div class="summary">为什么是 2：XIAO ESP32S3 Sense 内置 PDM 麦克风输出电平偏低，抬高一档提升编码效率。属于<strong>实测经验值</strong>。</div>
+        </article>
+      </section>
+
+      <!-- ================= 四 ================= -->
+      <section class="part" id="c4">
+        <div class="part-head"><span class="pn">四</span><h2>环形缓冲</h2></div>
+        <p class="part-sub">数据结构 · 读写指针 · 绕回 · 溢出策略</p>
+
+        <article class="kp">
+          <h3><span class="kid">4.1</span>写入环形缓冲的过程</h3>
+          <p>四步——<strong>先算下一格 → 判断会不会撞上读指针 → 写当前格 → 指针前移（<code>% N</code> 绕回）</strong>。</p>
+          <p class="coderef">opus_encoder.cpp:98-113</p>
+          <div class="scroll"><pre><code>int opus_receive_pcm(int16_t *data, size_t samples)
+{
+    if (pcm_ring_buffer == nullptr) {
+        return -1;
+    }
+    for (size_t i = 0; i &lt; samples; i++) {
+        size_t next_write = (ring_write_pos + 1) % AUDIO_RING_BUFFER_SAMPLES;   // ① 先算下一格
+        if (next_write == ring_read_pos) {                                      // ② 会撞上读指针？
+            // Buffer full, drop oldest sample
+            ring_read_pos = (ring_read_pos + 1) % AUDIO_RING_BUFFER_SAMPLES;    // ③ 丢最旧的
+        }
+        pcm_ring_buffer[ring_write_pos] = data[i];                              // ④ 写当前格
+        ring_write_pos = next_write;                                            // ⑤ 指针前移
+    }
+    return 0;
+}</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:13-15 · 指针定义</p>
+          <div class="scroll"><pre><code>static int16_t *pcm_ring_buffer = nullptr;
+static volatile size_t ring_write_pos = 0;
+static volatile size_t ring_read_pos  = 0;</code></pre></div>
+          <div class="diagram">初始:   read=2, write=5
+        ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+        │     │     │  a  │  b  │  c  │     │     │     │
+        └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+                      ↑                       ↑
+① next_write = (5+1) % 8 = 6             read=2                  write=5
+② 6 == read(2) ?  否
+④ buf[5] = x
+⑤ write = 6</div>
+          <div class="key"><strong>顺序很关键</strong>：先算指针 +1 判断满没满（①②），<strong>再往当前位置写</strong>（④）——不是先写再判断。</div>
+          <p><strong>满了会怎样</strong>：「丢最旧、保最新」——对实时音频是对的，宁可丢一段旧声音，也不能让新声音卡住。</p>
+          <p><strong>三个设计要点</strong>：</p>
+          <ol>
+            <li><strong>先算后写</strong> → 保证写端<strong>永远不覆盖未读数据</strong>（除非满，那时主动丢弃）</li>
+            <li><strong>牺牲一格</strong> → <code>N−1 = 7999</code> 可用。因为「空」定义为 <code>write == read</code>，不留一格的话「满」也是 <code>write == read</code>，两种状态分不清</li>
+            <li><strong><code>volatile</code></strong> → 但本项目读写都在同一个 <code>loopTask</code> 里，其实无并发，更像防御性写法</li>
+          </ol>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">4.2</span>每次写入是 2 字节吗？</h3>
+          <p><strong>是的</strong>，但<strong>下标单位是「样本」不是「字节」</strong>，<code>×2</code> 由编译器自动完成。</p>
+          <p class="coderef">opus_encoder.cpp:13 与 :98 · 两边都是 int16_t</p>
+          <div class="scroll"><pre><code>static int16_t *pcm_ring_buffer = nullptr;              // ← int16_t 数组
+
+int opus_receive_pcm(int16_t *data, size_t samples)     // ← data 也是 int16_t*
+...
+pcm_ring_buffer[ring_write_pos] = data[i];
+//    int16_t（2字节）              int16_t（2字节）</code></pre></div>
+          <div class="diagram">pcm_ring_buffer (int16_t *)
+下标:       0        1        2        3       ...      7999
+         ┌────────┬────────┬────────┬────────┬─────┬────────┐
+         │ 2 字节 │ 2 字节 │ 2 字节 │ 2 字节 │ ... │ 2 字节 │
+         └────────┴────────┴────────┴────────┴─────┴────────┘
+字节地址:  0        2        4        6              15998</div>
+          <div class="key">编译器实际生成 <code>*(pcm_ring_buffer + ring_write_pos * 2)</code>。<strong><code>pcm_ring_buffer[3]</code> 落在字节地址 6，不是 3。</strong></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>类型</th><th>表达式</th><th>实际字节偏移</th></tr></thead>
+              <tbody>
+                <tr><td><code>int16_t *p</code></td><td><code>p[3]</code> / <code>p + 3</code></td><td><strong>+6 字节</strong></td></tr>
+                <tr><td><code>uint8_t *p</code></td><td><code>p[3]</code> / <code>p + 3</code></td><td><strong>+3 字节</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">4.3</span>「解环」的代码</h3>
+          <p>把环形里可能被<strong>切成两段</strong>的一帧，拼成一段<strong>连续内存</strong>。Opus 只认连续数组。</p>
+          <p class="coderef">opus_encoder.cpp:153-158 · 带 % N 的 4 行循环</p>
+          <div class="scroll"><pre><code>while (ring_buffer_available() &gt;= OPUS_FRAME_SAMPLES) {
+    // Read samples from ring buffer
+    for (size_t i = 0; i &lt; OPUS_FRAME_SAMPLES; i++) {          // 320 次
+        opus_input_buffer[i] = pcm_ring_buffer[ring_read_pos];  // 拷到【连续】的第 i 格
+        ring_read_pos = (ring_read_pos + 1) % AUDIO_RING_BUFFER_SAMPLES;  // ← 取模让指针绕回
+    }</code></pre></div>
+          <div class="diagram">pcm_ring_buffer   ring_read_pos = 7900
+  ... [7900] ... [7999] │ [0] [1] ... [219]
+       └── 100 个 ──┘    └── 220 个 ──┘
+       ↑ 物理上不连续！但逻辑上连续
+
+       拷贝到 ↓
+
+opus_input_buffer
+  [0] ... [99] [100] ... [319]
+  └ 来自 7900~7999 ┘└ 来自 0~219 ┘   ← 被「拉直」成连续 320 个</div>
+          <div class="summary">跑到 <code>ring_read_pos = 7999</code> 时，<code>(7999 + 1) % 8000 = 0</code>，指针无缝回到开头。<strong>每次 2 字节，320 次共 640 字节。</strong></div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">4.4</span><code>pcm_ring_buffer</code> 和 <code>pcm_data</code> 的关系</h3>
+          <p><strong>不是同一块内存。</strong><code>pcm_data</code> 是 <code>opus_input_buffer</code> 的<strong>形参别名</strong>；<code>opus_input_buffer</code> 的内容是从 <code>pcm_ring_buffer</code> <strong>拷</strong>来的。</p>
+          <p class="coderef">opus_encoder.cpp:13 · 仓库，8000 样本</p>
+          <div class="scroll"><pre><code>static int16_t *pcm_ring_buffer = nullptr;</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:19 · 出货箱，320 样本</p>
+          <div class="scroll"><pre><code>static int16_t *opus_input_buffer = nullptr;</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:124 · 形参名</p>
+          <div class="scroll"><pre><code>int opus_encode_frame(int16_t *pcm_data, size_t samples)   // ← 形参叫 pcm_data</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:161 · 实参是 opus_input_buffer</p>
+          <div class="scroll"><pre><code>int encoded_bytes = opus_encode_frame(opus_input_buffer, OPUS_FRAME_SAMPLES);</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>名字</th><th>是什么</th><th>大小</th><th>角色</th></tr></thead>
+              <tbody>
+                <tr><td><code>pcm_ring_buffer</code></td><td>全局静态指针</td><td><strong>8000 样本</strong></td><td><strong>仓库</strong></td></tr>
+                <tr><td><code>opus_input_buffer</code></td><td>全局静态指针</td><td><strong>320 样本</strong></td><td><strong>出货箱</strong></td></tr>
+                <tr><td><code>pcm_data</code></td><td><strong>函数形参</strong></td><td>指向 320 样本</td><td><strong>只是形参名</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">在 <code>opus_encode_frame()</code> 内部，<code>pcm_data</code> 和 <code>opus_input_buffer</code> <strong>指向同一块 640 字节内存</strong>。中间那次拷贝<strong>不能省</strong>——因为环形的一帧可能不连续。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">4.5</span>Opus 的环形缓冲区多大？</h3>
+          <p><strong>8000 个样本 = 16 KB = 500 ms</strong>（可用 7999，因为牺牲一格）。</p>
+          <p class="coderef">config.h:132</p>
+          <div class="scroll"><pre><code>#define AUDIO_RING_BUFFER_SAMPLES 8000 // 500ms of audio data</code></pre></div>
+          <p class="coderef">opus_encoder.cpp:31 · 分配在 PSRAM</p>
+          <div class="scroll"><pre><code>pcm_ring_buffer = (int16_t *)heap_caps_malloc(AUDIO_RING_BUFFER_SAMPLES * sizeof(int16_t), MALLOC_CAP_SPIRAM);</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>单位</th><th>值</th><th>算法</th></tr></thead>
+              <tbody>
+                <tr><td>样本数</td><td><strong>8000</strong></td><td>定义值</td></tr>
+                <tr><td>字节</td><td><strong>16000 B ≈ 15.6 KiB</strong></td><td>8000 × 2</td></tr>
+                <tr><td>时长</td><td><strong>500 ms</strong></td><td>8000 ÷ 16000</td></tr>
+                <tr><td>可装帧数</td><td><strong>25 帧</strong></td><td>8000 ÷ 320</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note"><strong>别混淆</strong>——同文件里还有两个「暂存缓冲」，不是环：<code>opus_output_buffer</code>（160 字节输出暂存）和 <code>opus_input_buffer</code>（320 样本输入暂存）。</div>
+          <div class="summary">这 500ms 是<strong>最大蓄水池</strong>，不是常态水位——正常时读写速度相当，缓冲接近空，<strong>不增加延迟</strong>。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">4.6</span>发送环形缓冲为什么是 16 × 162？</h3>
+          <p><code>16</code> 是<strong>帧数容量</strong>，<code>162 = 160 + 2</code> 是<strong>单帧最大占地</strong>（数据 + 长度前缀）。<strong>16 是「最坏情况保证」，实际能装约 31 帧。</strong></p>
+          <p class="coderef">app.cpp:81-85</p>
+          <div class="scroll"><pre><code>// Audio ring buffer for encoded packets
+#define AUDIO_TX_BUFFER_SIZE (AUDIO_TX_RING_BUFFER_SIZE * (OPUS_OUTPUT_MAX_BYTES + 2))
+static uint8_t audio_tx_buffer[AUDIO_TX_BUFFER_SIZE];
+static volatile size_t audio_tx_write_pos = 0;
+static volatile size_t audio_tx_read_pos  = 0;</code></pre></div>
+          <p class="coderef">config.h:146 与 config.h:139</p>
+          <div class="scroll"><pre><code>#define AUDIO_TX_RING_BUFFER_SIZE 16   // Number of encoded frames to buffer
+#define OPUS_OUTPUT_MAX_BYTES 160      // Max encoded frame size</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>部分</th><th>值</th><th>含义</th></tr></thead>
+              <tbody>
+                <tr><td><code>AUDIO_TX_RING_BUFFER_SIZE</code></td><td><strong>16</strong></td><td><strong>帧数</strong></td></tr>
+                <tr><td><code>OPUS_OUTPUT_MAX_BYTES + 2</code></td><td>160 + 2 = <strong>162</strong></td><td>每帧占地</td></tr>
+                <tr><td>乘积</td><td><strong>2592</strong></td><td>总字节数</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>为什么 <code>+2</code>——因为写入时加了 2 字节长度前缀（见 6.4）：</p>
+          <div class="diagram">┌────────┬────────┬──────────────────────────┐
+│ 长度低 │ 长度高 │   Opus 数据（最多 160）   │
+└────────┴────────┴──────────────────────────┘
+ └── 2 字节 ──┘└────── 最多 160 字节 ──────┘</div>
+          <div class="key"><strong>为什么实际能装约 31 帧：</strong>
+          <div class="math" style="margin:.6rem 0 0;background:transparent;border:none;padding:0;">16 × 162 = 2592 字节（按每帧最大算）
+2592 ÷ (80 + 2) ≈ 31 帧</div></div>
+          <div class="summary">它是<strong>字节环</strong>（指针按字节取模 <code>% 2592</code>），不是帧环。「16 帧」只是设计意图，对应时间约 <strong>320 ms</strong>。</div>
+        </article>
+      </section>
+
+      <!-- ================= 五 ================= -->
+      <section class="part" id="c5">
+        <div class="part-head"><span class="pn">五</span><h2>Opus 编码与码率</h2></div>
+        <p class="part-sub">帧长 · 码率控制 · API 参数 · 压缩实现</p>
+
+        <article class="kp">
+          <h3><span class="kid">5.1</span>码率是什么？瞬时的还是平均的？</h3>
+          <p>码率 = <strong>每秒用多少比特</strong>表示音频。<code>OPUS_BITRATE</code> 是<strong>目标平均值</strong>，不是瞬时值。</p>
+          <p class="coderef">config.h:140 与 opus_encoder.cpp:71</p>
+          <div class="scroll"><pre><code>#define OPUS_BITRATE 32000             // 32kbps
+...
+opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_BITRATE));</code></pre></div>
+          <div class="math">32000 bit/s ÷ 8 = 4000 字节/s
+4000 ÷ 50 帧/s = 80 字节/帧</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>帧内容</th><th>帧大小</th><th>瞬时码率</th></tr></thead>
+              <tbody>
+                <tr><td>静音</td><td>20 B</td><td>8 kbps</td></tr>
+                <tr><td>平稳元音</td><td>60 B</td><td>24 kbps</td></tr>
+                <tr><td>正常说话</td><td>80 B</td><td><strong>32 kbps</strong> ← 正好等于目标</td></tr>
+                <tr><td>语速快 + 噪音</td><td>120 B</td><td>48 kbps</td></tr>
+                <tr><td>音乐（顶到上限）</td><td>160 B</td><td><strong>64 kbps</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="diagram">瞬时码率
+(kbps)
+ 64 ┤                    ▄            ← 上限：160 字节/帧
+    │      ▄        ▄    █   ▄
+ 32 ┼━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← 目标平均线（OPUS_BITRATE）
+    │  ▄ █   ▀  ▄ ▀        ▀    ▀
+  8 ┤ █
+    └────────────────────────────────▶ 时间</div>
+          <div class="summary">类比「平均时速 100 km/h」——瞬时可能在 0~120 之间摆，<strong>平均才是那个计划</strong>。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.2</span><code>opus_process()</code> 一次读多少？</h3>
+          <p><strong>固定 320 个样本</strong>（= 20 ms），并用 <code>while</code> 循环<strong>把积压全部读完</strong>。</p>
+          <p class="coderef">opus_encoder.cpp:146-167</p>
+          <div class="scroll"><pre><code>void opus_process()
+{
+    if (encoder == nullptr || pcm_ring_buffer == nullptr || opus_input_buffer == nullptr) {
+        return;
+    }
+
+    // Check if we have enough samples for a frame
+    while (ring_buffer_available() &gt;= OPUS_FRAME_SAMPLES) {        // ← 320
+        for (size_t i = 0; i &lt; OPUS_FRAME_SAMPLES; i++) {
+            opus_input_buffer[i] = pcm_ring_buffer[ring_read_pos];
+            ring_read_pos = (ring_read_pos + 1) % AUDIO_RING_BUFFER_SAMPLES;
+        }
+
+        int encoded_bytes = opus_encode_frame(opus_input_buffer, OPUS_FRAME_SAMPLES);
+
+        if (encoded_bytes &gt; 0 &amp;&amp; encoded_callback != nullptr) {
+            encoded_callback(opus_output_buffer, encoded_bytes);
+        }
+    }
+}</code></pre></div>
+          <p class="coderef">config.h:138</p>
+          <div class="scroll"><pre><code>#define OPUS_FRAME_SAMPLES 320         // 20ms frame @ 16kHz</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>这轮积压</th><th>编码帧数</th><th>剩余</th></tr></thead>
+              <tbody>
+                <tr><td>8000（满）</td><td>25 帧</td><td>0</td></tr>
+                <tr><td>500</td><td>1 帧</td><td>180</td></tr>
+                <tr><td>319</td><td><strong>0 帧</strong></td><td>319</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note"><strong>它读的是 PCM 环</strong>（<code>pcm_ring_buffer</code>，麦克风灌进来的原始 PCM），不是「opus 输出环」。整个函数的<strong>方向是「入」不是「出」</strong>。</div>
+          <div class="summary">用 <code>&gt;=</code> 不是 <code>==</code>——<strong>零头留在缓冲里</strong>，和下次新数据拼成完整帧。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.3</span>没攒够 320 会一直卡着吗？</h3>
+          <p><strong>不会卡，立刻返回。</strong><code>while</code> 条件不成立 ≠ 阻塞等待。</p>
+          <p class="coderef">opus_encoder.cpp:153</p>
+          <div class="scroll"><pre><code>while (ring_buffer_available() &gt;= OPUS_FRAME_SAMPLES) {
+    ...
+}
+// ← 条件不成立时，直接跳到这里，函数结束（一毫秒都不等）</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th><code>i2s_read</code></th><th><code>opus_process</code> 的 while</th></tr></thead>
+              <tbody>
+                <tr><td>数据不够时</td><td><strong>阻塞</strong>最多 20ms</td><td><strong>立即返回</strong></td></tr>
+                <tr><td>代码</td><td><code>pdMS_TO_TICKS(20)</code></td><td><code>while (available &gt;= 320)</code></td></tr>
+                <tr><td>为什么</td><td>等待有价值（让出 CPU 给 BLE 任务）</td><td><strong>等也没用</strong>——数据自己会来，阻塞只会拖慢主循环</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">这是「<strong>有就干，没有就走</strong>」的轮询模式。主循环 ~25ms 后就会再调它一次。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.4</span><code>opus_process()</code> 是 20 ms 读一次吗？</h3>
+          <p><strong>不是。</strong>「20ms」是<strong>一帧音频的时长</strong>，不是<strong>函数调用间隔</strong>。</p>
+          <p class="coderef">app.cpp:883-886 · 调用点在主循环里，没有定时器</p>
+          <div class="scroll"><pre><code>if (audioEnabled &amp;&amp; mic_is_running()) {
+    mic_process();      // ← 里面 i2s_read 阻塞最多 20ms
+    opus_process();     // ← 紧接着被调用（不是定时器触发）
+}</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>值</th><th>由谁决定</th></tr></thead>
+              <tbody>
+                <tr><td><strong>一帧消耗的音频时长</strong></td><td>320 ÷ 16000 = <strong>20 ms</strong></td><td>Opus 帧长（固定）</td></tr>
+                <tr><td><strong>函数被调用的间隔</strong></td><td>≈ <strong>25~30 ms</strong></td><td>主循环节奏（浮动）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="math">16000 ÷ 320 = 50 帧/秒
+50 ÷ 35 ≈ 1.4 帧/次   ← 大多数时候 1 帧，偶尔 2 帧</div>
+          <div class="summary">它是「<strong>数据驱动</strong>」不是「时钟驱动」——主循环慢了就多读几帧自动追平，快了就读 0 帧。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.5</span><code>opus_encode</code> 各参数</h3>
+          <p>五个参数 = 「把 320 个样本交给编码器，压缩成最多 160 字节」。</p>
+          <p class="coderef">opus_encoder.cpp:135-136</p>
+          <div class="scroll"><pre><code>opus_int32 encoded_bytes =
+    opus_encode(encoder, pcm_data, OPUS_FRAME_SAMPLES,
+                opus_output_buffer, OPUS_OUTPUT_MAX_BYTES);</code></pre></div>
+          <p class="coderef">官方原型对照</p>
+          <div class="scroll"><pre><code>opus_int32 opus_encode(OpusEncoder *st,            // ① 编码器实例
+                       const opus_int16 *pcm,      // ② 输入 PCM
+                       int frame_size,             // ③ 本帧样本数
+                       unsigned char *data,        // ④ 输出缓冲
+                       opus_int32 max_data_bytes); // ⑤ 输出缓冲上限</code></pre></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>实参</th><th>值</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td>①</td><td><code>encoder</code></td><td>—</td><td>编码器<strong>实例</strong>（<strong>有状态！</strong>记住上一帧）</td></tr>
+                <tr><td>②</td><td><code>pcm_data</code></td><td>320 个样本</td><td>输入 PCM</td></tr>
+                <tr><td>③</td><td><code>OPUS_FRAME_SAMPLES</code></td><td><strong>320</strong></td><td>本帧<strong>每声道</strong>样本数</td></tr>
+                <tr><td>④</td><td><code>opus_output_buffer</code></td><td>160 字节缓冲</td><td>压缩结果写这里</td></tr>
+                <tr><td>⑤</td><td><code>OPUS_OUTPUT_MAX_BYTES</code></td><td><strong>160</strong></td><td>④ 的<strong>容量上限</strong>（安全阀）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="coderef">opus_encoder.cpp:57 · ① 有状态——创建时设定</p>
+          <div class="scroll"><pre><code>encoder = opus_encoder_create(MIC_SAMPLE_RATE, 1, OPUS_APPLICATION_VOIP, &amp;error);
+//                           16000 Hz     单声道   VoIP 场景（优先走 SILK 引擎）</code></pre></div>
+          <div class="key"><strong>① 的后果</strong>：不能打乱顺序（第 N 帧依赖第 N−1 帧）、不能并行。<br>
+          <strong>③ 是「每声道」样本数</strong>——立体声时 320 意味着数组里有 640 个 <code>int16_t</code>。<br>
+          <strong>⑤ 不够时 Opus 降质量而不越界。</strong></div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.6</span>输出到 <code>encoded_bytes</code> 还是 <code>opus_output_buffer</code>？</h3>
+          <p><strong>两个都去</strong>——数据进 <code>opus_output_buffer</code>，<code>encoded_bytes</code> 只拿到<strong>长度</strong>。</p>
+          <p class="coderef">opus_encoder.cpp:135 与 :163</p>
+          <div class="scroll"><pre><code>opus_int32 encoded_bytes =
+    opus_encode(encoder, pcm_data, OPUS_FRAME_SAMPLES,
+                opus_output_buffer, OPUS_OUTPUT_MAX_BYTES);     // ← 数据写到这
+...
+encoded_callback(opus_output_buffer, encoded_bytes);
+//                ↑ 数据在哪          ↑ 数据多长（两个都传！）</code></pre></div>
+          <div class="key"><strong>决定性论据</strong>：<code>opus_int32</code> = <strong>4 字节</strong>，物理上装不下 80 字节的数据。它只能是个「长度」。</div>
+          <div class="diagram">opus_output_buffer（容量 160 字节）
+┌──────────────────────────────────────┬───────────────────────────┐
+│      有效数据：78 字节                │  未使用（上次的残留）      │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ │  ░░░░░░░░░░░░░░░░░░░░░░░ │
+└──────────────────────────────────────┴───────────────────────────┘
+ ↑                                     ↑
+ 数据本身                              encoded_bytes = 78（有效到这儿）</div>
+          <div class="summary">这是 C 的经典模式——「<strong>缓冲区 + 长度</strong>」。只给指针不知道到哪结束，只给长度不知道在哪。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.7</span>Opus 编码的具体过程代码在哪？</h3>
+          <p><strong>不在项目代码里</strong>——在依赖的 libopus 库中，<strong>完整 C 源码就在本地</strong>。</p>
+          <p class="coderef">opus_encoder.cpp:71-79 · 项目代码只有「配置」</p>
+          <div class="scroll"><pre><code>opus_encoder_ctl(encoder, OPUS_SET_BITRATE(OPUS_BITRATE));
+opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(OPUS_COMPLEXITY));
+opus_encoder_ctl(encoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+opus_encoder_ctl(encoder, OPUS_SET_VBR(OPUS_VBR));
+opus_encoder_ctl(encoder, OPUS_SET_VBR_CONSTRAINT(0));
+opus_encoder_ctl(encoder, OPUS_SET_LSB_DEPTH(16));
+opus_encoder_ctl(encoder, OPUS_SET_DTX(0));
+opus_encoder_ctl(encoder, OPUS_SET_INBAND_FEC(0));
+opus_encoder_ctl(encoder, OPUS_SET_PACKET_LOSS_PERC(0));</code></pre></div>
+          <p class="coderef">源码位置（来自 platformio.ini:33 的依赖）</p>
+          <div class="diagram">.pio/libdeps/seeed_xiao_esp32s3/libopus/src/opus-1.3.1/
+├── src/opus_encoder.c     ← opus_encode() 的实现（约 26,211 行 C）
+├── celt/   (18 个 .c)     ← 引擎一：CELT
+└── silk/   (大量 .c)      ← 引擎二：SILK
+
+调用链：
+opus_encode()                src/opus_encoder.c:2226   ← 薄封装，做帧长检查
+   ↓
+opus_encode_native()         src/opus_encoder.c:1066   ← ★ 真正干活
+   ↓
+   ├── silk_Encode()            silk/*.c   ← 语音（LPC 预测）
+   ├── celt_encode_with_ec()    celt/*.c   ← 音乐（MDCT）
+   └── 混合（HYBRID）</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>引擎</th><th>擅长</th><th>原理</th><th>目录</th></tr></thead>
+              <tbody>
+                <tr><td><strong>SILK</strong></td><td>语音</td><td>LPC 线性预测</td><td><code>silk/</code></td></tr>
+                <tr><td><strong>CELT</strong></td><td>音乐、低延迟</td><td>MDCT + 感知量化</td><td><code>celt/</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary">本项目 <code>OPUS_APPLICATION_VOIP</code> 就是告诉 Opus「我要传人声」，于是<strong>优先走 SILK</strong>。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.8</span>「320 样本 → 160 字节」这个理解哪里错了？</h3>
+          <p><strong>320 和 160 之间不存在换算关系</strong>——一个是输入样本数，一个是输出容量上限；实际输出由<strong>码率</strong>决定（~80 字节）。</p>
+          <p class="coderef">config.h:138-140 · 三个常量各管一件事</p>
+          <div class="scroll"><pre><code>#define OPUS_FRAME_SAMPLES 320         // 【输入】：一次喂多少样本
+#define OPUS_OUTPUT_MAX_BYTES 160      // 【容量上限】：箱子多大
+#define OPUS_BITRATE 32000             // 【决定输出】：实际产出多少 ← 关键</code></pre></div>
+          <div class="diagram">     输入                     编码                    输出
+┌───────────────┐        ┌──────────┐        ┌──────────────┐
+│  320 个样本    │        │  Opus    │        │  ~80 字节     │
+│  = 640 字节 PCM│ ─────▶ │  压缩 8:1 │ ─────▶ │ (浮动 60~140) │
+└───────────────┘        └──────────┘        └──────────────┘</div>
+          <p>「必须 320 吗」——<strong>不是必须，是选择</strong>：</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>帧长</th><th>样本</th><th>每秒帧数</th><th>延迟</th><th>BLE 开销</th></tr></thead>
+              <tbody>
+                <tr><td>10 ms</td><td>160</td><td>100</td><td>低</td><td>高</td></tr>
+                <tr><td><strong>20 ms</strong></td><td><strong>320</strong></td><td><strong>50</strong></td><td><strong>中</strong></td><td><strong>中</strong></td></tr>
+                <tr><td>40 ms</td><td>640</td><td>25</td><td>高</td><td>低</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary"><strong><code>160</code> 是「箱子有多大」，不是「装了多满」</strong>。它是平均值的 2 倍，给 VBR 峰值留余量。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">5.9</span>每帧输出多少由声音复杂度决定吗？</h3>
+          <p><strong>是，但只是一半。</strong>是「声音复杂度」和「目标码率」两股力量拉扯的结果。</p>
+          <p class="coderef">opus_encoder.cpp:74-75 · VBR 开关就是「允许浮动」</p>
+          <div class="scroll"><pre><code>opus_encoder_ctl(encoder, OPUS_SET_VBR(OPUS_VBR));              // OPUS_VBR = 1
+opus_encoder_ctl(encoder, OPUS_SET_VBR_CONSTRAINT(0));          // 0 = 不限制浮动幅度</code></pre></div>
+          <p>如果改成 CBR（<code>OPUS_SET_VBR(0)</code>），每帧就固定约 80 字节——<strong>瞬时 = 平均</strong>。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>这 20ms 是什么声音</th><th>大概多少字节</th></tr></thead>
+              <tbody>
+                <tr><td>静音 / 只有底噪</td><td>10 ~ 40</td></tr>
+                <tr><td>平稳元音（"啊——"）</td><td>50 ~ 70</td></tr>
+                <tr><td>正常说话</td><td>70 ~ 90</td></tr>
+                <tr><td>语速快 + 噪音 + 爆破音</td><td>100 ~ 140</td></tr>
+                <tr><td>音乐 / 混杂噪声</td><td>140 ~ 160（逼近上限）</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary"><strong>帧长和复杂度是两个独立维度</strong>——同样 20ms，静音可能 15 字节，摇滚乐可能 155 字节，<strong>差 10 倍</strong>。</div>
+        </article>
+      </section>
+
+      <!-- ================= 六 ================= -->
+      <section class="part" id="c6">
+        <div class="part-head"><span class="pn">六</span><h2>软件架构：回调与并发</h2></div>
+        <p class="part-sub">函数指针 · 模块解耦 · 轮询与中断</p>
+
+        <article class="kp">
+          <h3><span class="kid">6.1</span>轮询 vs 中断</h3>
+          <p>轮询 = CPU <strong>主动问</strong>；中断 = 硬件<strong>主动报</strong>。<strong>本项目两种都用。</strong></p>
+          <p class="coderef">mic.cpp:121-122 · 麦克风 = 轮询</p>
+          <div class="scroll"><pre><code>size_t bytes_read = 0;
+esp_err_t err =
+    i2s_read(I2S_PORT, i2s_read_buffer, MIC_BUFFER_SAMPLES * sizeof(int16_t), &amp;bytes_read, pdMS_TO_TICKS(20));
+    //                                                                                    ↑ 主动去问，最多等 20ms</code></pre></div>
+          <p>装驱动时 <code>queue_size = 0</code>（<code>mic.cpp:68</code>）——<strong>没有 DMA 中断</strong>。</p>
+          <div class="note">⚠️ 这是<strong>「阻塞式轮询」</strong>，不是纯忙等——20ms 等待期间任务挂起，CPU 让给 BLE 任务。纯轮询是 <code>pdMS_TO_TICKS(0)</code>。</div>
+          <p class="coderef">app.cpp:120-123 · 按键 = 中断（ISR 里只做一件事）</p>
+          <div class="scroll"><pre><code>void IRAM_ATTR buttonISR()
+{
+    buttonPressed = true;      // ← ISR 只设一个 flag
+}</code></pre></div>
+          <p class="coderef">app.cpp:814 · 注册中断</p>
+          <div class="scroll"><pre><code>attachInterrupt(digitalPinToInterrupt(POWER_BUTTON_PIN), buttonISR, CHANGE);</code></pre></div>
+          <p class="coderef">app.cpp:192-214 · 主循环轮询 flag，做去抖和长按</p>
+          <div class="scroll"><pre><code>void handleButton()
+{
+    unsigned long now = millis();
+    static unsigned long lastDebounceTime = 0;
+    static bool buttonDown = false;
+    static bool longPressTriggered = false;
+
+    bool currentButtonState = !digitalRead(POWER_BUTTON_PIN); // Active low
+
+    if (currentButtonState &amp;&amp; !buttonDown) {
+        if (now - lastDebounceTime &lt; 50) {      // ← 去抖
+            return;
+        }
+        buttonPressTime = now;
+        buttonDown = true;
+        longPressTriggered = false;
+        lastDebounceTime = now;
+
+    } else if (currentButtonState &amp;&amp; buttonDown &amp;&amp; !longPressTriggered) {
+        unsigned long pressDuration = now - buttonPressTime;
+        if (pressDuration &gt;= 2000) {            // ← 长按 2 秒</code></pre></div>
+          <div class="diagram">【中断】按键
+   硬件电平变化 → buttonISR() 立刻执行（只设 flag，几微秒返回）
+                → 主循环下一轮 handleButton() 轮询 flag，做去抖/长按
+
+【轮询】麦克风
+   主循环每轮 → mic_process() → i2s_read(超时 20ms) 主动问"有数据吗"</div>
+          <div class="key"><strong>为什么按键用混合</strong>：ISR <strong>必须极短</strong>（不能 <code>malloc</code>、不能 <code>Serial.print</code>、不能 <code>delay</code>），所以只设 flag；而去抖/长按需要「等一段时间看状态」，这种逻辑放主循环最合适。</div>
+          <p><strong>同一个 I2S 的两种用法</strong>——区别只在驱动安装的第三个参数：</p>
+          <div class="scroll"><pre><code>// 方案 A：轮询（本项目）
+i2s_driver_install(I2S_PORT, &amp;i2s_config, 0, NULL);   // ← 0 = 不要事件队列
+
+// 方案 B：事件驱动
+static QueueHandle_t i2s_evt_queue;
+i2s_driver_install(I2S_PORT, &amp;i2s_config, 4, &amp;i2s_evt_queue);   // ← 要事件队列
+// 然后开一个独立任务 xQueueReceive 等事件</code></pre></div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">6.2</span><code>audio_callback</code> 的函数指针逻辑</h3>
+          <p>函数指针 = 存着<strong>函数地址</strong>的变量。四步链条：定义类型 → 声明变量 → 注册 → 调用。</p>
+          <p class="coderef">① mic.h:8 · 定义类型</p>
+          <div class="scroll"><pre><code>typedef void (*mic_data_handler)(int16_t *data, size_t samples);</code></pre></div>
+          <p>从里往外读：<code>mic_data_handler</code> 是「指向一个接收 <code>(int16_t*, size_t)</code>、返回 <code>void</code> 的函数的指针」类型。</p>
+          <p class="coderef">② mic.cpp:12 · 声明变量</p>
+          <div class="scroll"><pre><code>static mic_data_handler audio_callback = nullptr;   // 初始"没人登记"</code></pre></div>
+          <p class="coderef">③ mic.cpp:109-112 与 app.cpp:856 · 注册</p>
+          <div class="scroll"><pre><code>void mic_set_callback(mic_data_handler callback)
+{
+    audio_callback = callback;      // 只是把地址存起来
+}
+// ...
+mic_set_callback(onMicData);        // ← 传函数【名】，不是 onMicData()</code></pre></div>
+          <div class="note"><strong><code>onMicData</code> 和 <code>onMicData()</code> 差一个括号，意思完全不同</strong><br>
+          · <code>onMicData</code> = 函数的<strong>地址</strong>（一个值）<br>
+          · <code>onMicData()</code> = <strong>调用</strong>这个函数（执行它）</div>
+          <p class="coderef">④ mic.cpp:140-142 · 调用</p>
+          <div class="scroll"><pre><code>if (audio_callback != nullptr) {                    // 守卫：没人注册就跳过
+    audio_callback(i2s_read_buffer, samples_read);  // 通过指针【跳到那个地址执行】
+}</code></pre></div>
+          <div class="diagram">audio_callback 变量（8 字节指针，在 RAM）
+┌──────────────────┐
+│  0x400D1A2C      │ ──────────▶  onMicData 的机器码（在 Flash）
+└──────────────────┘
+      ↑ 注册时把地址写进来</div>
+          <div class="summary"><code>nullptr</code> 守卫<strong>必须</strong>——否则时序出错时会跳到地址 0，<strong>立即崩溃</strong>。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">6.3</span><code>onMicData</code> 的实际作用</h3>
+          <p><strong>一行——把麦克风刚采到的 PCM 转交给 Opus 编码器。</strong></p>
+          <p class="coderef">app.cpp:324-328</p>
+          <div class="scroll"><pre><code>void onMicData(int16_t *data, size_t samples)
+{
+    // Feed PCM data to Opus encoder
+    opus_receive_pcm(data, samples);
+}</code></pre></div>
+          <div class="diagram">i2s_read() 填满 i2s_read_buffer（PCM）
+   ↓
+MIC_GAIN 增益 ×2
+   ↓
+audio_callback(i2s_read_buffer, samples_read)   ← mic.cpp:141 调用
+   ↓
+★ onMicData(data, samples) ★                    ← app.cpp:324
+   ↓
+opus_receive_pcm(data, samples)                 ← opus_encoder.cpp:98
+   ↓
+pcm_ring_buffer[ring_write_pos] = data[i]       ← 逐样本存入环形缓冲</div>
+          <ol>
+            <li><strong>收到的是 PCM，不是 PDM</strong> —— PDM→PCM 早在硬件层完成</li>
+            <li><strong>必须当场消费</strong> —— <code>data</code> 指向的 <code>i2s_read_buffer</code> 是全局静态缓冲，下一轮会被覆盖</li>
+            <li><strong>不是中断</strong> —— 跑在 Arduino <code>loopTask</code> 上下文，耗时算进主循环</li>
+          </ol>
+          <p>如果没有它会怎样（紧耦合版本）：</p>
+          <div class="scroll"><pre><code>// mic.cpp —— ❌ 麦克风模块被迫知道编码器存在
+#include "opus_encoder.h"
+void mic_process() {
+    ...
+    opus_receive_pcm(i2s_read_buffer, samples_read);   // 写死
+}</code></pre></div>
+          <div class="summary">它是 mic 和 opus 两个模块之间<strong>唯一的桥</strong>，存在理由是<strong>解耦</strong>——换消费者只改一行注册。</div>
+        </article>
+
+        <article class="kp">
+          <h3><span class="kid">6.4</span><code>onOpusEncoded</code> 回调的作用</h3>
+          <p><strong>「编码器」和「BLE 发送」之间的中转站</strong>——把编码好的帧<strong>暂存进发送队列</strong>（加 2 字节长度前缀）。<strong>它不发数据。</strong></p>
+          <p class="coderef">app.cpp:330-359</p>
+          <div class="scroll"><pre><code>void onOpusEncoded(uint8_t *data, size_t len)
+{
+    // Store encoded data in TX ring buffer
+    if (len &gt; OPUS_OUTPUT_MAX_BYTES) {
+        return;                                    // ① 校验长度
+    }
+
+    size_t packet_size = len + 2;
+    size_t next_write = (audio_tx_write_pos + packet_size) % AUDIO_TX_BUFFER_SIZE;
+
+    // ③ 溢出保护
+    if ((audio_tx_write_pos &lt; audio_tx_read_pos &amp;&amp; next_write &gt;= audio_tx_read_pos) ||
+        (audio_tx_write_pos &gt;= audio_tx_read_pos &amp;&amp; next_write &lt; audio_tx_write_pos &amp;&amp;
+         next_write &gt;= audio_tx_read_pos)) {
+        return;                                    // 环满，丢这一帧
+    }
+
+    // ② 加 2 字节长度前缀
+    audio_tx_buffer[audio_tx_write_pos] = len &amp; 0xFF;
+    audio_tx_buffer[(audio_tx_write_pos + 1) % AUDIO_TX_BUFFER_SIZE] = (len &gt;&gt; 8) &amp; 0xFF;
+
+    for (size_t i = 0; i &lt; len; i++) {
+        audio_tx_buffer[(audio_tx_write_pos + 2 + i) % AUDIO_TX_BUFFER_SIZE] = data[i];
+    }
+
+    audio_tx_write_pos = next_write;
+}</code></pre></div>
+          <p class="coderef">app.cpp:853 · 注册</p>
+          <div class="scroll"><pre><code>opus_set_callback(onOpusEncoded);</code></pre></div>
+          <p class="coderef">app.cpp:883-891 · ⚠️ 它不发数据——真正的发送在另一处</p>
+          <div class="scroll"><pre><code>if (audioEnabled &amp;&amp; mic_is_running()) {
+    mic_process();
+    opus_process();          // ← 编码，触发 onOpusEncoded（只是暂存）
+}
+if (connected &amp;&amp; audioSubscribed) {
+    processAudioTx();        // ← 这里才真正发 BLE
+}</code></pre></div>
+          <div class="key"><strong>为什么拆两步</strong>：编码由 Opus 帧长定时定量、不能停（麦克风一直在进数据）；发送要看 BLE 连接状态和拥塞。<strong>发送环就是缓冲池。</strong></div>
+          <p><strong>为什么要 2 字节长度前缀</strong>：Opus 是 VBR，每帧大小不一样，而发送环是<strong>字节流</strong>，不知道帧的边界：</p>
+          <div class="diagram">不加前缀：[帧1 80字节][帧2 95字节][帧3 62字节]  ← 读端不知第一帧到哪结束
+加前缀：  [80][帧1][95][帧2][62][帧3]           ← 一看 95 就知道接下来 95 字节是一帧</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th><code>onMicData</code></th><th><code>onOpusEncoded</code></th></tr></thead>
+              <tbody>
+                <tr><td>代码量</td><td><strong>1 行</strong></td><td><strong>29 行</strong></td></tr>
+                <tr><td>做什么</td><td>原样转发</td><td>加前缀 + 溢出检查</td></tr>
+                <tr><td>为什么</td><td>下游是<strong>定长样本流</strong>，天然对齐</td><td>下游是<strong>变长帧字节流</strong>，必须自己划边界</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- ================= 七 ================= -->
+      <section class="part" id="c7">
+        <div class="part-head"><span class="pn">七</span><h2>BLE 发送与协议</h2></div>
+        <p class="part-sub">打包 · 包头 · MTU</p>
+
+        <article class="kp">
+          <h3><span class="kid">7.1</span>包组装：<code>memcpy</code> + <code>setValue</code></h3>
+          <p>把 Opus 帧装进 BLE 包——<strong>3 字节包头 + 负载</strong>。</p>
+          <p class="coderef">app.cpp:361-378</p>
+          <div class="scroll"><pre><code>void broadcastAudioPacket(uint8_t *data, size_t len)
+{
+    if (!connected || !audioSubscribed || audioDataCharacteristic == nullptr) {
+        return;
+    }
+
+    // Build packet: 2 bytes index + 1 byte sub-index + data
+    audio_packet_buffer[0] = audioPacketIndex &amp; 0xFF;            // 序号 低字节
+    audio_packet_buffer[1] = (audioPacketIndex &gt;&gt; 8) &amp; 0xFF;     // 序号 高字节
+    audio_packet_buffer[2] = 0;                                  // 子序号
+
+    memcpy(audio_packet_buffer + AUDIO_PACKET_HEADER_SIZE, data, len);        // ① 拷负载
+    audioDataCharacteristic-&gt;setValue(audio_packet_buffer, len + AUDIO_PACKET_HEADER_SIZE);  // ② 交给 BLE
+    audioDataCharacteristic-&gt;notify();                            // ③ 真正发出
+
+    audioPacketIndex++;
+}</code></pre></div>
+          <p class="coderef">config.h:145</p>
+          <div class="scroll"><pre><code>#define AUDIO_PACKET_HEADER_SIZE 3     // 2 bytes index + 1 byte sub-index</code></pre></div>
+          <p><strong>① <code>memcpy</code></strong> —— 把 Opus 数据搬进缓冲，<strong>故意从偏移 3 开始</strong>（前 3 字节是包头）。</p>
+          <div class="key"><strong>注意 <code>+3</code> 和 <code>pcm_ring_buffer[3]</code> 完全不同</strong>：<code>int16_t *pcm_ring_buffer</code> 的 <code>p[3]</code> → <strong>字节 6</strong>（×2）；<code>uint8_t *audio_packet_buffer</code> 的 <code>+3</code> → <strong>字节 3</strong>（×1）。</div>
+          <p><strong>② <code>setValue</code></strong> —— 为什么是 <code>len + 3</code> 不是 <code>len</code>？因为要送<strong>整个包</strong>。只写 <code>len</code> 会把包头切掉，接收端无法判断丢包。</p>
+          <div class="diagram">audio_packet_buffer （容量 163 字节 = 160 + 3）
+┌──────────┬──────────┬──────────┬────────────────────────────────┬─────────┐
+│  [0]     │  [1]     │  [2]     │  [3] ... [3+len-1]             │  未使用  │
+│ 序号低   │ 序号高   │ 子序号   │  Opus 帧数据 (len 字节)         │         │
+└──────────┴──────────┴──────────┴────────────────────────────────┴─────────┘
+ └──── 3 字节包头 ────┘└──────────── 负载 ────────────┘
+ └──────────────── len + 3 字节 ─────────────────────┘</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>字节</th><th>内容</th><th>作用</th></tr></thead>
+              <tbody>
+                <tr><td><code>[0]</code> <code>[1]</code></td><td><code>audioPacketIndex</code>（小端序）</td><td><strong>包序号</strong>——接收端靠它检测丢包/乱序</td></tr>
+                <tr><td><code>[2]</code></td><td><code>0</code></td><td>子序号，为分片预留</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p><strong>为什么需要序号</strong>：BLE 通知可能丢包、乱序。手机收到 <code>100, 101, 103</code> 就知道 102 丢了。Opus 支持丢包隐藏（PLC），但前提是<strong>知道丢了包</strong>。</p>
+          <div class="note"><strong>配套条件：BLE MTU</strong> —— 包总长最大 163 字节，<strong>超过 BLE 默认 ATT MTU</strong>（23 字节，负载 20）。前提是手机连接时协商了足够大的 MTU（≥ 166）。如果 MTU 太小，<code>notify()</code> 会截断或失败——<strong>这是调试「音频发不出去」时该查的一个点</strong>。</div>
+        </article>
+      </section>
+
+      <!-- ================= 附录 ================= -->
+      <section class="part" id="appendix">
+        <div class="part-head"><span class="pn">—</span><h2>附录：跨类别易错点</h2></div>
+        <p class="part-sub">复习时先扫这一页</p>
+
+        <article class="kp">
+          <h3>A. 三个「20ms」不要混</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>说法</th><th>数值</th><th>性质</th></tr></thead>
+              <tbody>
+                <tr><td>Opus 帧的音频时长</td><td>320 样本 = 20 ms</td><td>固定，Opus 规定</td></tr>
+                <tr><td><code>i2s_read</code> 的超时</td><td>20 ms</td><td>固定，代码设定</td></tr>
+                <tr><td><code>opus_process()</code> 调用间隔</td><td>≈ 25~30 ms</td><td>浮动，主循环决定</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="kp">
+          <h3>B. 指针算术速查（最反复的坑）</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>类型</th><th>表达式</th><th>实际字节偏移</th></tr></thead>
+              <tbody>
+                <tr><td><code>int16_t *p</code></td><td><code>p[3]</code> / <code>p + 3</code></td><td><strong>+6 字节</strong></td></tr>
+                <tr><td><code>uint8_t *p</code></td><td><code>p[3]</code> / <code>p + 3</code></td><td><strong>+3 字节</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="coderef">代码里的实例</p>
+          <div class="scroll"><pre><code>pcm_ring_buffer[3]                                // int16_t → 字节 6
+audio_packet_buffer + AUDIO_PACKET_HEADER_SIZE    // uint8_t → 字节 3</code></pre></div>
+        </article>
+
+        <article class="kp">
+          <h3>C. 阻塞 vs 不阻塞</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>函数</th><th>数据不够时</th><th>代码</th><th>原因</th></tr></thead>
+              <tbody>
+                <tr><td><code>i2s_read</code></td><td><strong>阻塞</strong>最多 20ms</td><td><code>pdMS_TO_TICKS(20)</code></td><td>等待有价值（让出 CPU）</td></tr>
+                <tr><td><code>opus_process</code> 的 while</td><td><strong>立即返回</strong></td><td><code>while (available &gt;= 320)</code></td><td>等待没意义，只会拖慢主循环</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="kp">
+          <h3>D. 两个环的溢出策略不同</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>环</th><th>满时</th><th>代码位置</th><th>理由</th></tr></thead>
+              <tbody>
+                <tr><td>PCM 环</td><td>丢<strong>最旧</strong>（推 read_pos）</td><td><code>opus_encoder.cpp:107</code></td><td>保实时性，不能有累积延迟</td></tr>
+                <tr><td>发送环</td><td>丢<strong>最新</strong>（<code>return</code>）</td><td><code>app.cpp:345-347</code></td><td>保持队列顺序，实现简单</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="kp">
+          <h3>E. 一次典型流程的数据量变化</h3>
+          <div class="diagram">麦克风 PDM          1 bit @ ~1 MHz          →（硬件抽取）→
+i2s_read            几百个样本（≤1600）      →（增益 ×2）→
+pcm_ring_buffer     攒够 320 样本            →（拷贝解环）→
+opus_input_buffer   320 样本 = 640 字节      →（Opus 编码 8:1）→
+opus_output_buffer  ~80 字节                 →（+2 长度前缀）→
+audio_tx_buffer     ~82 字节                 →（+3 包头）→
+BLE notify          ~83 字节                 →  手机</div>
+        </article>
+
+        <article class="kp">
+          <h3>F. 关键常量一览</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>常量</th><th>值</th><th>位置</th><th>类别</th></tr></thead>
+              <tbody>
+                <tr><td><code>MIC_SAMPLE_RATE</code></td><td>16000</td><td>config.h:129</td><td>采样</td></tr>
+                <tr><td><code>MIC_BUFFER_SAMPLES</code></td><td>1600</td><td>config.h:130</td><td>DMA 读取</td></tr>
+                <tr><td><code>MIC_GAIN</code></td><td>2</td><td>config.h:131</td><td>增益</td></tr>
+                <tr><td><code>AUDIO_RING_BUFFER_SAMPLES</code></td><td>8000</td><td>config.h:132</td><td>环形缓冲</td></tr>
+                <tr><td><code>OPUS_FRAME_SAMPLES</code></td><td>320</td><td>config.h:138</td><td>Opus</td></tr>
+                <tr><td><code>OPUS_OUTPUT_MAX_BYTES</code></td><td>160</td><td>config.h:139</td><td>Opus</td></tr>
+                <tr><td><code>OPUS_BITRATE</code></td><td>32000</td><td>config.h:140</td><td>码率</td></tr>
+                <tr><td><code>AUDIO_TX_RING_BUFFER_SIZE</code></td><td>16</td><td>config.h:146</td><td>发送环</td></tr>
+                <tr><td><code>dma_buf_count × dma_buf_len</code></td><td>8 × 256</td><td>mic.cpp:52-53</td><td>DMA</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span>omiGlass 知识点分类 · 43 个问题 / 7 大类</span>
+        <span>源：omi-main/omiGlass/firmware/</span>
+        <span>配套 markdown：omiGlass-Topic-Notes.md</span>
+      </footer>
+
+    </main>
+  </div>
+</div>

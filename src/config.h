@@ -94,7 +94,12 @@ typedef enum {
 
 #define MIC_SAMPLE_RATE 16000          // 16kHz sample rate
 #define MIC_BUFFER_SAMPLES 1600        // 100ms buffer (16000 * 0.1)
-#define MIC_GAIN 8                     // Microphone gain multiplier
+#define MIC_GAIN 24                     // Microphone gain multiplier
+#define DESPIKE_BASELINE_FLOOR 200      // 自适应去尖峰：基线幅值下限
+#define DESPIKE_RATIO 4                 // 自适应去尖峰：尖刺判定倍数
+#define MAX_SPIKE_SAMPLES 32            // 最大尖刺宽度(采样点)，超过判为正常语音
+#define DIFF_THRESHOLD_RATIO 2          // 尖刺起点相邻差 > baseline*该值
+#define EMA_SHIFT 6                     // EMA 平滑 1/(2^6)≈4ms 跟踪速度
 #define AUDIO_RING_BUFFER_SAMPLES 8000 // 500ms of audio data
 
 // =============================================================================

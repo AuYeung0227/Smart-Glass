@@ -1,0 +1,449 @@
+{
+  "_metadata": {
+    "description": "Resumen de metricas del protocolo de deteccion conjunta de enojo y hablante.",
+    "units": "Las metricas de accuracy y rate estan en escala 0..1; multiplicar por 100 para leerlas como porcentaje.",
+    "sections": {
+      "overall": "Metricas globales usando todas las muestras.",
+      "per_distance_cm": "Metricas agrupadas por distancia al ESP32.",
+      "per_line": "Metricas agrupadas por linea radial y angulo.",
+      "per_point": "Metricas por cada punto espacial line_id + distance_cm.",
+      "speaker_confusion": "Matriz donde la clave externa es el hablante predicho y la clave interna es el hablante real."
+    },
+    "fields": {
+      "samples": "Cantidad de mediciones incluidas en el grupo.",
+      "anger_accuracy": "Proporcion de frases donde se acerto enojo/no enojo.",
+      "speaker_accuracy": "Proporcion de frases donde se acerto el hablante.",
+      "joint_accuracy": "Proporcion de frases donde se acertaron enojo y hablante en la misma medicion.",
+      "speaker_error_rate": "Proporcion global de error de hablante.",
+      "anger_false_positive_rate_neutral": "Proporcion de frases neutrales marcadas incorrectamente como enojo.",
+      "anger_miss_rate_angry": "Proporcion de frases enojadas donde no se detecto enojo."
+    }
+  },
+  "overall": {
+    "samples": 256,
+    "anger_accuracy": 0.9453,
+    "speaker_accuracy": 0.8594,
+    "joint_accuracy": 0.8281,
+    "speaker_error_rate": 0.1406,
+    "anger_false_positive_rate_neutral": 0.0234,
+    "anger_miss_rate_angry": 0.0859
+  },
+  "per_distance_cm": {
+    "50": {
+      "samples": 64,
+      "anger_accuracy": 0.9844,
+      "speaker_accuracy": 0.9688,
+      "joint_accuracy": 0.9688
+    },
+    "100": {
+      "samples": 64,
+      "anger_accuracy": 0.9375,
+      "speaker_accuracy": 0.9219,
+      "joint_accuracy": 0.875
+    },
+    "150": {
+      "samples": 64,
+      "anger_accuracy": 0.9375,
+      "speaker_accuracy": 0.8906,
+      "joint_accuracy": 0.8438
+    },
+    "200": {
+      "samples": 64,
+      "anger_accuracy": 0.9219,
+      "speaker_accuracy": 0.6562,
+      "joint_accuracy": 0.625
+    }
+  },
+  "per_line": {
+    "1": {
+      "angle_deg": 0,
+      "samples": 32,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    "2": {
+      "angle_deg": 45,
+      "samples": 32,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.75,
+      "joint_accuracy": 0.75
+    },
+    "3": {
+      "angle_deg": 90,
+      "samples": 32,
+      "anger_accuracy": 0.9688,
+      "speaker_accuracy": 0.8438,
+      "joint_accuracy": 0.8125
+    },
+    "4": {
+      "angle_deg": 135,
+      "samples": 32,
+      "anger_accuracy": 0.8125,
+      "speaker_accuracy": 0.8125,
+      "joint_accuracy": 0.7188
+    },
+    "5": {
+      "angle_deg": 180,
+      "samples": 32,
+      "anger_accuracy": 0.9688,
+      "speaker_accuracy": 0.9062,
+      "joint_accuracy": 0.9062
+    },
+    "6": {
+      "angle_deg": 225,
+      "samples": 32,
+      "anger_accuracy": 0.9688,
+      "speaker_accuracy": 0.9688,
+      "joint_accuracy": 0.9375
+    },
+    "7": {
+      "angle_deg": 270,
+      "samples": 32,
+      "anger_accuracy": 0.9062,
+      "speaker_accuracy": 0.8438,
+      "joint_accuracy": 0.7812
+    },
+    "8": {
+      "angle_deg": 315,
+      "samples": 32,
+      "anger_accuracy": 0.9375,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.8438
+    }
+  },
+  "per_point": [
+    {
+      "line_id": 1,
+      "distance_cm": 50,
+      "angle_deg": 0,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 1,
+      "distance_cm": 100,
+      "angle_deg": 0,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 1,
+      "distance_cm": 150,
+      "angle_deg": 0,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 1,
+      "distance_cm": 200,
+      "angle_deg": 0,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.75,
+      "joint_accuracy": 0.75
+    },
+    {
+      "line_id": 2,
+      "distance_cm": 50,
+      "angle_deg": 45,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 2,
+      "distance_cm": 100,
+      "angle_deg": 45,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.75,
+      "joint_accuracy": 0.75
+    },
+    {
+      "line_id": 2,
+      "distance_cm": 150,
+      "angle_deg": 45,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 2,
+      "distance_cm": 200,
+      "angle_deg": 45,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.5,
+      "joint_accuracy": 0.5
+    },
+    {
+      "line_id": 3,
+      "distance_cm": 50,
+      "angle_deg": 90,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 3,
+      "distance_cm": 100,
+      "angle_deg": 90,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.75
+    },
+    {
+      "line_id": 3,
+      "distance_cm": 150,
+      "angle_deg": 90,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 3,
+      "distance_cm": 200,
+      "angle_deg": 90,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.625,
+      "joint_accuracy": 0.625
+    },
+    {
+      "line_id": 4,
+      "distance_cm": 50,
+      "angle_deg": 135,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 4,
+      "distance_cm": 100,
+      "angle_deg": 135,
+      "samples": 8,
+      "anger_accuracy": 0.75,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.75
+    },
+    {
+      "line_id": 4,
+      "distance_cm": 150,
+      "angle_deg": 135,
+      "samples": 8,
+      "anger_accuracy": 0.75,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.625
+    },
+    {
+      "line_id": 4,
+      "distance_cm": 200,
+      "angle_deg": 135,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 0.625,
+      "joint_accuracy": 0.625
+    },
+    {
+      "line_id": 5,
+      "distance_cm": 50,
+      "angle_deg": 180,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 5,
+      "distance_cm": 100,
+      "angle_deg": 180,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 5,
+      "distance_cm": 150,
+      "angle_deg": 180,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 5,
+      "distance_cm": 200,
+      "angle_deg": 180,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.75,
+      "joint_accuracy": 0.75
+    },
+    {
+      "line_id": 6,
+      "distance_cm": 50,
+      "angle_deg": 225,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 6,
+      "distance_cm": 100,
+      "angle_deg": 225,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 6,
+      "distance_cm": 150,
+      "angle_deg": 225,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 6,
+      "distance_cm": 200,
+      "angle_deg": 225,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 7,
+      "distance_cm": 50,
+      "angle_deg": 270,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 7,
+      "distance_cm": 100,
+      "angle_deg": 270,
+      "samples": 8,
+      "anger_accuracy": 0.875,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 7,
+      "distance_cm": 150,
+      "angle_deg": 270,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 7,
+      "distance_cm": 200,
+      "angle_deg": 270,
+      "samples": 8,
+      "anger_accuracy": 0.75,
+      "speaker_accuracy": 0.5,
+      "joint_accuracy": 0.375
+    },
+    {
+      "line_id": 8,
+      "distance_cm": 50,
+      "angle_deg": 315,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 8,
+      "distance_cm": 100,
+      "angle_deg": 315,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 1.0,
+      "joint_accuracy": 1.0
+    },
+    {
+      "line_id": 8,
+      "distance_cm": 150,
+      "angle_deg": 315,
+      "samples": 8,
+      "anger_accuracy": 1.0,
+      "speaker_accuracy": 0.875,
+      "joint_accuracy": 0.875
+    },
+    {
+      "line_id": 8,
+      "distance_cm": 200,
+      "angle_deg": 315,
+      "samples": 8,
+      "anger_accuracy": 0.75,
+      "speaker_accuracy": 0.625,
+      "joint_accuracy": 0.5
+    }
+  ],
+  "speaker_confusion": {
+    "confusion": {
+      "hija": 0,
+      "hijo": 0,
+      "mama": 1,
+      "papa": 0
+    },
+    "hija": {
+      "hija": 56,
+      "hijo": 0,
+      "mama": 2,
+      "papa": 0
+    },
+    "hijo": {
+      "hija": 0,
+      "hijo": 48,
+      "mama": 0,
+      "papa": 0
+    },
+    "inseguro": {
+      "hija": 4,
+      "hijo": 4,
+      "mama": 1,
+      "papa": 3
+    },
+    "mama": {
+      "hija": 2,
+      "hijo": 0,
+      "mama": 56,
+      "papa": 0
+    },
+    "papa": {
+      "hija": 0,
+      "hijo": 6,
+      "mama": 0,
+      "papa": 60
+    },
+    "parcial": {
+      "hija": 2,
+      "hijo": 6,
+      "mama": 4,
+      "papa": 1
+    }
+  }
+}

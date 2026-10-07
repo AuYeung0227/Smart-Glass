@@ -1,0 +1,15 @@
+\begin{table}[t]
+\centering
+\caption{Anger detection results on the held-out ESD test set.}
+\label{tab:anger_results}
+\begin{tabular}{lcccccc}
+\toprule
+Model & Acc.\ & F1 & AUC & Params & Arena (KB) & Lat. (ms) \\
+\midrule
+MicroLightCNN (F32) & 82.8 & 82.3 & 90.6 & 19,409 & 210.9 & 0.0 \\
+MicroLightCNN (INT8) & 83.2 & 82.8 & 90.5 & 19,409 & 59.7 & 0.0 \\
+DS-CNN (INT8) & 83.1 & 84.1 & 89.3 & 5,153 & 81.2 & 0.0 \\
+MatchboxNet (INT8) & 82.2 & 82.2 & 85.4 & 18,241 & 94.7 & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python decode.py audio3_packets.txt)"
+      "Bash(python decode.py audio3_packets.txt)",
+      "Bash(\"/c/Users/86133/.platformio/penv/Scripts/platformio.exe\" run *)"
     ]
   }
 }

@@ -1,0 +1,79 @@
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+[ESD] train: X=(12000, 20, 63)  y=Counter({1: 6000, 0: 6000})
+[ESD] test: X=(1200, 20, 63)  y=Counter({1: 600, 0: 600})
+[ESD] evaluation: X=(800, 20, 63)  y=Counter({1: 400, 0: 400})
+[anger] Reusing microlightcnn_f32.tflite and microlightcnn_int8.tflite
+[speaker] Reusing mlp_xiembedding_f32.tflite and mlp_xiembedding_int8.tflite
+
+======================================================================
+  Quantization ablation (Table V)
+======================================================================
+
+[Float32  /  Float32]
+  anger_acc = 79.75 %   speaker_top1 = 98.56 %   total_arena =  293.5 KB   total_lat =    0.0 ms
+
+[Float32  /     INT8]
+  anger_acc = 79.75 %   speaker_top1 = 98.55 %   total_arena =  232.5 KB   total_lat =    0.0 ms
+
+[   INT8  /  Float32]
+  anger_acc = 79.08 %   speaker_top1 = 98.56 %   total_arena =  142.3 KB   total_lat =    0.0 ms
+
+[   INT8  /     INT8]
+  anger_acc = 79.08 %   speaker_top1 = 98.55 %   total_arena =   81.3 KB   total_lat =    0.0 ms
+  -> wrote LaTeX table to outputs/quant/table_v.tex
+
+Done. Outputs in outputs/quant

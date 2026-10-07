@@ -1,0 +1,8 @@
+-> wrote aggregate JSON to outputs/paper_tables/all_tables.json
+-> wrote aggregate LaTeX to outputs/paper_tables/all_tables.tex
+
+Summary of available tables:
+  table_iii_anger           OK
+  table_iv_speaker          OK
+  table_v_quant             OK
+  table_vi_pipeline         OK

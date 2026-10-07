@@ -1,0 +1,664 @@
+Speakers: ['hija', 'hijo', 'mama', 'papa']
+Clean segments: 737
+Train (augmented): 1770  Val: 147
+
+======================================================================
+  MLP-XiEmbedding  (Xi-Vector front-end)
+======================================================================
+  parameters: 21,604
+Epoch 1/100
+28/28 - 1s - 26ms/step - accuracy: 0.4684 - loss: 1.3377 - val_accuracy: 0.6259 - val_loss: 0.8580 - learning_rate: 0.0010
+Epoch 2/100
+28/28 - 0s - 2ms/step - accuracy: 0.7288 - loss: 0.7513 - val_accuracy: 0.7687 - val_loss: 0.6058 - learning_rate: 0.0010
+Epoch 3/100
+28/28 - 0s - 2ms/step - accuracy: 0.7994 - loss: 0.5531 - val_accuracy: 0.8435 - val_loss: 0.4220 - learning_rate: 0.0010
+Epoch 4/100
+28/28 - 0s - 2ms/step - accuracy: 0.8452 - loss: 0.4644 - val_accuracy: 0.9252 - val_loss: 0.2981 - learning_rate: 0.0010
+Epoch 5/100
+28/28 - 0s - 2ms/step - accuracy: 0.8847 - loss: 0.3576 - val_accuracy: 0.9592 - val_loss: 0.2160 - learning_rate: 0.0010
+Epoch 6/100
+28/28 - 0s - 2ms/step - accuracy: 0.8915 - loss: 0.3199 - val_accuracy: 0.9728 - val_loss: 0.1847 - learning_rate: 0.0010
+Epoch 7/100
+28/28 - 0s - 2ms/step - accuracy: 0.9220 - loss: 0.2460 - val_accuracy: 0.9660 - val_loss: 0.1410 - learning_rate: 0.0010
+Epoch 8/100
+28/28 - 0s - 2ms/step - accuracy: 0.9169 - loss: 0.2334 - val_accuracy: 0.9660 - val_loss: 0.1264 - learning_rate: 0.0010
+Epoch 9/100
+28/28 - 0s - 2ms/step - accuracy: 0.9367 - loss: 0.2155 - val_accuracy: 0.9796 - val_loss: 0.1181 - learning_rate: 0.0010
+Epoch 10/100
+28/28 - 0s - 2ms/step - accuracy: 0.9412 - loss: 0.1958 - val_accuracy: 0.9592 - val_loss: 0.1226 - learning_rate: 0.0010
+Epoch 11/100
+28/28 - 0s - 2ms/step - accuracy: 0.9418 - loss: 0.1827 - val_accuracy: 0.9524 - val_loss: 0.1172 - learning_rate: 0.0010
+Epoch 12/100
+28/28 - 0s - 2ms/step - accuracy: 0.9537 - loss: 0.1630 - val_accuracy: 0.9456 - val_loss: 0.1236 - learning_rate: 0.0010
+Epoch 13/100
+28/28 - 0s - 2ms/step - accuracy: 0.9497 - loss: 0.1677 - val_accuracy: 0.9456 - val_loss: 0.1196 - learning_rate: 0.0010
+Epoch 14/100
+28/28 - 0s - 2ms/step - accuracy: 0.9616 - loss: 0.1392 - val_accuracy: 0.9456 - val_loss: 0.1175 - learning_rate: 0.0010
+Epoch 15/100
+28/28 - 0s - 2ms/step - accuracy: 0.9621 - loss: 0.1271 - val_accuracy: 0.9592 - val_loss: 0.1113 - learning_rate: 0.0010
+Epoch 16/100
+28/28 - 0s - 2ms/step - accuracy: 0.9638 - loss: 0.1182 - val_accuracy: 0.9456 - val_loss: 0.1319 - learning_rate: 0.0010
+Epoch 17/100
+28/28 - 0s - 2ms/step - accuracy: 0.9644 - loss: 0.1225 - val_accuracy: 0.9524 - val_loss: 0.1252 - learning_rate: 0.0010
+Epoch 18/100
+28/28 - 0s - 2ms/step - accuracy: 0.9667 - loss: 0.1198 - val_accuracy: 0.9388 - val_loss: 0.1444 - learning_rate: 0.0010
+Epoch 19/100
+28/28 - 0s - 2ms/step - accuracy: 0.9723 - loss: 0.1085 - val_accuracy: 0.9524 - val_loss: 0.1304 - learning_rate: 0.0010
+Epoch 20/100
+28/28 - 0s - 2ms/step - accuracy: 0.9627 - loss: 0.1283 - val_accuracy: 0.9456 - val_loss: 0.1336 - learning_rate: 0.0010
+Epoch 21/100
+28/28 - 0s - 2ms/step - accuracy: 0.9757 - loss: 0.0991 - val_accuracy: 0.9252 - val_loss: 0.1822 - learning_rate: 0.0010
+Epoch 22/100
+28/28 - 0s - 2ms/step - accuracy: 0.9718 - loss: 0.0989 - val_accuracy: 0.9728 - val_loss: 0.0984 - learning_rate: 0.0010
+Epoch 23/100
+28/28 - 0s - 2ms/step - accuracy: 0.9734 - loss: 0.0941 - val_accuracy: 0.9388 - val_loss: 0.1713 - learning_rate: 0.0010
+Epoch 24/100
+28/28 - 0s - 2ms/step - accuracy: 0.9768 - loss: 0.0896 - val_accuracy: 0.9456 - val_loss: 0.1314 - learning_rate: 0.0010
+Epoch 25/100
+28/28 - 0s - 2ms/step - accuracy: 0.9802 - loss: 0.0861 - val_accuracy: 0.9388 - val_loss: 0.1375 - learning_rate: 0.0010
+Epoch 26/100
+28/28 - 0s - 2ms/step - accuracy: 0.9836 - loss: 0.0748 - val_accuracy: 0.9456 - val_loss: 0.1341 - learning_rate: 0.0010
+Epoch 27/100
+28/28 - 0s - 2ms/step - accuracy: 0.9831 - loss: 0.0757 - val_accuracy: 0.9388 - val_loss: 0.1496 - learning_rate: 0.0010
+Epoch 28/100
+28/28 - 0s - 2ms/step - accuracy: 0.9797 - loss: 0.0768 - val_accuracy: 0.9524 - val_loss: 0.1289 - learning_rate: 0.0010
+Epoch 29/100
+28/28 - 0s - 2ms/step - accuracy: 0.9847 - loss: 0.0665 - val_accuracy: 0.9592 - val_loss: 0.1312 - learning_rate: 0.0010
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmp1alzamqs'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 80), dtype=tf.float32, name='xivector')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  6052708176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068715792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068720976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+W0000 00:00:1779933400.571289  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933400.571301  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+I0000 00:00:1779933400.576142  929608 mlir_graph_optimization_pass.cc:425] MLIR V1 optimization pass is not enabled
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmp2v5yoexu'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 80), dtype=tf.float32, name='xivector')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  6052708176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068715792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068718480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068717904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068719056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068716752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6068720976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779933400.821335  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933400.821343  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 ] top-1(acc)=0.986  EER=0.014  rej=0.05  arena=82.6KB  lat=0.0ms
+  [INT8] top-1(acc)=0.986  EER=0.014  rej=0.06  arena=21.6KB  lat=0.0ms
+
+======================================================================
+  ECAPA-TDNN-pruned  (frame-level MFCC)
+======================================================================
+  parameters: 26,208
+Epoch 1/100
+28/28 - 3s - 101ms/step - accuracy: 0.5915 - loss: 0.9820 - val_accuracy: 0.3537 - val_loss: 1.2990 - learning_rate: 0.0010
+Epoch 2/100
+28/28 - 0s - 13ms/step - accuracy: 0.8469 - loss: 0.4676 - val_accuracy: 0.4898 - val_loss: 1.0043 - learning_rate: 0.0010
+Epoch 3/100
+28/28 - 0s - 13ms/step - accuracy: 0.9062 - loss: 0.2884 - val_accuracy: 0.6871 - val_loss: 0.7554 - learning_rate: 0.0010
+Epoch 4/100
+28/28 - 0s - 14ms/step - accuracy: 0.9497 - loss: 0.1871 - val_accuracy: 0.8776 - val_loss: 0.5241 - learning_rate: 0.0010
+Epoch 5/100
+28/28 - 0s - 16ms/step - accuracy: 0.9678 - loss: 0.1345 - val_accuracy: 0.9116 - val_loss: 0.3685 - learning_rate: 0.0010
+Epoch 6/100
+28/28 - 0s - 16ms/step - accuracy: 0.9768 - loss: 0.1040 - val_accuracy: 0.9660 - val_loss: 0.2285 - learning_rate: 0.0010
+Epoch 7/100
+28/28 - 0s - 16ms/step - accuracy: 0.9864 - loss: 0.0795 - val_accuracy: 0.9388 - val_loss: 0.1819 - learning_rate: 0.0010
+Epoch 8/100
+28/28 - 0s - 16ms/step - accuracy: 0.9876 - loss: 0.0678 - val_accuracy: 0.9660 - val_loss: 0.1290 - learning_rate: 0.0010
+Epoch 9/100
+28/28 - 0s - 16ms/step - accuracy: 0.9887 - loss: 0.0583 - val_accuracy: 0.9592 - val_loss: 0.1037 - learning_rate: 0.0010
+Epoch 10/100
+28/28 - 0s - 16ms/step - accuracy: 0.9944 - loss: 0.0431 - val_accuracy: 0.9660 - val_loss: 0.0951 - learning_rate: 0.0010
+Epoch 11/100
+28/28 - 0s - 16ms/step - accuracy: 0.9966 - loss: 0.0334 - val_accuracy: 0.9660 - val_loss: 0.0790 - learning_rate: 0.0010
+Epoch 12/100
+28/28 - 0s - 16ms/step - accuracy: 0.9983 - loss: 0.0283 - val_accuracy: 0.9796 - val_loss: 0.0677 - learning_rate: 0.0010
+Epoch 13/100
+28/28 - 0s - 16ms/step - accuracy: 0.9983 - loss: 0.0251 - val_accuracy: 0.9728 - val_loss: 0.0696 - learning_rate: 0.0010
+Epoch 14/100
+28/28 - 0s - 16ms/step - accuracy: 0.9983 - loss: 0.0210 - val_accuracy: 0.9728 - val_loss: 0.0573 - learning_rate: 0.0010
+Epoch 15/100
+28/28 - 0s - 16ms/step - accuracy: 0.9966 - loss: 0.0246 - val_accuracy: 0.9660 - val_loss: 0.0818 - learning_rate: 0.0010
+Epoch 16/100
+28/28 - 0s - 16ms/step - accuracy: 0.9994 - loss: 0.0190 - val_accuracy: 0.9796 - val_loss: 0.0556 - learning_rate: 0.0010
+Epoch 17/100
+28/28 - 0s - 16ms/step - accuracy: 0.9977 - loss: 0.0173 - val_accuracy: 0.9796 - val_loss: 0.0436 - learning_rate: 0.0010
+Epoch 18/100
+28/28 - 0s - 16ms/step - accuracy: 0.9966 - loss: 0.0181 - val_accuracy: 0.9864 - val_loss: 0.0479 - learning_rate: 0.0010
+Epoch 19/100
+28/28 - 0s - 16ms/step - accuracy: 0.9949 - loss: 0.0219 - val_accuracy: 0.9796 - val_loss: 0.0496 - learning_rate: 0.0010
+Epoch 20/100
+28/28 - 0s - 16ms/step - accuracy: 0.9972 - loss: 0.0211 - val_accuracy: 0.9728 - val_loss: 0.0488 - learning_rate: 0.0010
+Epoch 21/100
+28/28 - 0s - 16ms/step - accuracy: 0.9960 - loss: 0.0220 - val_accuracy: 0.9728 - val_loss: 0.0574 - learning_rate: 0.0010
+Epoch 22/100
+28/28 - 0s - 16ms/step - accuracy: 0.9955 - loss: 0.0184 - val_accuracy: 0.9728 - val_loss: 0.0705 - learning_rate: 0.0010
+Epoch 23/100
+28/28 - 0s - 16ms/step - accuracy: 0.9989 - loss: 0.0125 - val_accuracy: 0.9728 - val_loss: 0.0661 - learning_rate: 0.0010
+Epoch 24/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0074 - val_accuracy: 0.9796 - val_loss: 0.0534 - learning_rate: 0.0010
+Epoch 25/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0048 - val_accuracy: 0.9796 - val_loss: 0.0480 - learning_rate: 5.0000e-04
+Epoch 26/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0041 - val_accuracy: 0.9796 - val_loss: 0.0432 - learning_rate: 5.0000e-04
+Epoch 27/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0038 - val_accuracy: 0.9796 - val_loss: 0.0435 - learning_rate: 5.0000e-04
+Epoch 28/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0036 - val_accuracy: 0.9796 - val_loss: 0.0435 - learning_rate: 5.0000e-04
+Epoch 29/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0033 - val_accuracy: 0.9796 - val_loss: 0.0442 - learning_rate: 5.0000e-04
+Epoch 30/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0032 - val_accuracy: 0.9796 - val_loss: 0.0416 - learning_rate: 5.0000e-04
+Epoch 31/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0030 - val_accuracy: 0.9796 - val_loss: 0.0434 - learning_rate: 5.0000e-04
+Epoch 32/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0028 - val_accuracy: 0.9796 - val_loss: 0.0416 - learning_rate: 5.0000e-04
+Epoch 33/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0027 - val_accuracy: 0.9796 - val_loss: 0.0423 - learning_rate: 5.0000e-04
+Epoch 34/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0026 - val_accuracy: 0.9796 - val_loss: 0.0417 - learning_rate: 5.0000e-04
+Epoch 35/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0025 - val_accuracy: 0.9796 - val_loss: 0.0430 - learning_rate: 5.0000e-04
+Epoch 36/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0024 - val_accuracy: 0.9796 - val_loss: 0.0424 - learning_rate: 5.0000e-04
+Epoch 37/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0023 - val_accuracy: 0.9796 - val_loss: 0.0430 - learning_rate: 5.0000e-04
+Epoch 38/100
+28/28 - 0s - 16ms/step - accuracy: 1.0000 - loss: 0.0021 - val_accuracy: 0.9796 - val_loss: 0.0432 - learning_rate: 2.5000e-04
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpkxjt13tw'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  6128362384: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360848: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360656: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361232: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128357968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360080: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128354704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363152: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365456: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128359120: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365072: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363920: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365648: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128366416: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364304: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128362000: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363728: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128359312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364880: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850832: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850064: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850640: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202859280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202859472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202861200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202861008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+W0000 00:00:1779933431.319735  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933431.319753  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpopxjrpg4'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  6128362384: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360848: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360656: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361232: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128357968: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361424: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360464: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128360080: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128354704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363152: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365840: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365456: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128359120: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365072: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128361040: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363920: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364112: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128365648: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128366416: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364304: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128362000: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128363728: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128359312: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364688: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  6128364880: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850832: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850064: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202850640: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202851792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202852560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202853904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857552: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202854864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202855824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202859280: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202857360: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860048: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202859472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860432: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860240: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202858128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202861200: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202861008: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202856784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860816: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  13202860624: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779933432.477874  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933432.477882  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 ] top-1(acc)=0.993  EER=0.007  rej=0.01  arena=500.6KB  lat=0.1ms
+  [INT8] top-1(acc)=0.993  EER=0.008  rej=0.02  arena=132.7KB  lat=0.0ms
+
+======================================================================
+  CAM++  (frame-level MFCC)
+======================================================================
+  parameters: 23,214
+Epoch 1/100
+28/28 - 3s - 95ms/step - accuracy: 0.6599 - loss: 0.8447 - val_accuracy: 0.5034 - val_loss: 1.1379 - learning_rate: 0.0010
+Epoch 2/100
+28/28 - 0s - 12ms/step - accuracy: 0.8842 - loss: 0.3452 - val_accuracy: 0.5374 - val_loss: 0.9386 - learning_rate: 0.0010
+Epoch 3/100
+28/28 - 0s - 12ms/step - accuracy: 0.9429 - loss: 0.1997 - val_accuracy: 0.7211 - val_loss: 0.7524 - learning_rate: 0.0010
+Epoch 4/100
+28/28 - 0s - 13ms/step - accuracy: 0.9706 - loss: 0.1321 - val_accuracy: 0.8503 - val_loss: 0.5788 - learning_rate: 0.0010
+Epoch 5/100
+28/28 - 0s - 14ms/step - accuracy: 0.9814 - loss: 0.0937 - val_accuracy: 0.9388 - val_loss: 0.4384 - learning_rate: 0.0010
+Epoch 6/100
+28/28 - 0s - 14ms/step - accuracy: 0.9898 - loss: 0.0680 - val_accuracy: 0.9592 - val_loss: 0.3322 - learning_rate: 0.0010
+Epoch 7/100
+28/28 - 0s - 14ms/step - accuracy: 0.9927 - loss: 0.0510 - val_accuracy: 0.9728 - val_loss: 0.2525 - learning_rate: 0.0010
+Epoch 8/100
+28/28 - 0s - 14ms/step - accuracy: 0.9955 - loss: 0.0389 - val_accuracy: 0.9728 - val_loss: 0.1972 - learning_rate: 0.0010
+Epoch 9/100
+28/28 - 0s - 14ms/step - accuracy: 0.9960 - loss: 0.0297 - val_accuracy: 0.9864 - val_loss: 0.1527 - learning_rate: 0.0010
+Epoch 10/100
+28/28 - 0s - 14ms/step - accuracy: 0.9977 - loss: 0.0234 - val_accuracy: 0.9864 - val_loss: 0.1232 - learning_rate: 0.0010
+Epoch 11/100
+28/28 - 0s - 14ms/step - accuracy: 0.9989 - loss: 0.0184 - val_accuracy: 0.9932 - val_loss: 0.1047 - learning_rate: 0.0010
+Epoch 12/100
+28/28 - 0s - 14ms/step - accuracy: 0.9994 - loss: 0.0154 - val_accuracy: 0.9864 - val_loss: 0.0916 - learning_rate: 0.0010
+Epoch 13/100
+28/28 - 0s - 14ms/step - accuracy: 0.9989 - loss: 0.0131 - val_accuracy: 0.9864 - val_loss: 0.0827 - learning_rate: 0.0010
+Epoch 14/100
+28/28 - 0s - 14ms/step - accuracy: 0.9989 - loss: 0.0120 - val_accuracy: 0.9728 - val_loss: 0.0817 - learning_rate: 0.0010
+Epoch 15/100
+28/28 - 0s - 14ms/step - accuracy: 0.9983 - loss: 0.0122 - val_accuracy: 0.9728 - val_loss: 0.0872 - learning_rate: 0.0010
+Epoch 16/100
+28/28 - 0s - 14ms/step - accuracy: 0.9989 - loss: 0.0113 - val_accuracy: 0.9660 - val_loss: 0.0926 - learning_rate: 0.0010
+Epoch 17/100
+28/28 - 0s - 14ms/step - accuracy: 0.9994 - loss: 0.0087 - val_accuracy: 0.9660 - val_loss: 0.0906 - learning_rate: 0.0010
+Epoch 18/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0055 - val_accuracy: 0.9796 - val_loss: 0.0780 - learning_rate: 0.0010
+Epoch 19/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0042 - val_accuracy: 0.9728 - val_loss: 0.0808 - learning_rate: 0.0010
+Epoch 20/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0035 - val_accuracy: 0.9728 - val_loss: 0.0796 - learning_rate: 0.0010
+Epoch 21/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0031 - val_accuracy: 0.9796 - val_loss: 0.0789 - learning_rate: 0.0010
+Epoch 22/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0027 - val_accuracy: 0.9796 - val_loss: 0.0795 - learning_rate: 0.0010
+Epoch 23/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0025 - val_accuracy: 0.9796 - val_loss: 0.0802 - learning_rate: 0.0010
+Epoch 24/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0022 - val_accuracy: 0.9796 - val_loss: 0.0816 - learning_rate: 0.0010
+Epoch 25/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0020 - val_accuracy: 0.9796 - val_loss: 0.0829 - learning_rate: 0.0010
+Epoch 26/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0019 - val_accuracy: 0.9796 - val_loss: 0.0823 - learning_rate: 5.0000e-04
+Epoch 27/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0018 - val_accuracy: 0.9728 - val_loss: 0.0827 - learning_rate: 5.0000e-04
+Epoch 28/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0017 - val_accuracy: 0.9728 - val_loss: 0.0828 - learning_rate: 5.0000e-04
+Epoch 29/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0017 - val_accuracy: 0.9728 - val_loss: 0.0831 - learning_rate: 5.0000e-04
+Epoch 30/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0016 - val_accuracy: 0.9728 - val_loss: 0.0833 - learning_rate: 5.0000e-04
+Epoch 31/100
+28/28 - 0s - 14ms/step - accuracy: 1.0000 - loss: 0.0015 - val_accuracy: 0.9728 - val_loss: 0.0835 - learning_rate: 5.0000e-04
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpf44xp7vh'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  14564560528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559376: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559184: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564558992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559760: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561296: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561872: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559568: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561680: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562832: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562064: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562640: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560912: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+W0000 00:00:1779933458.590911  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933458.590921  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+Saved artifact at '/var/folders/2t/npjljy6j1ld_fkf3qnrt22n40000gn/T/tmpt5187w46'. The following endpoints are available:
+
+* Endpoint 'serve'
+  args_0 (POSITIONAL_ONLY): TensorSpec(shape=(None, 63, 20), dtype=tf.float32, name='mfcc_t20')
+Output Type:
+  TensorSpec(shape=(None, 4), dtype=tf.float32, name=None)
+Captures:
+  14564560528: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560720: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559952: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559376: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559184: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564558992: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559760: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561296: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561872: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561104: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564559568: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561680: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562256: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562832: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562064: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562640: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563408: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564562448: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563792: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560144: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563600: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564561488: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564560: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563024: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563216: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564368: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564944: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565520: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564752: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565328: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566096: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565136: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566480: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560912: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566288: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564564176: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567248: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565712: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564565904: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567056: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567632: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568208: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567440: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568016: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568784: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564567824: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569168: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564563984: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568976: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566864: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569936: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568400: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564568592: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564569744: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570320: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570896: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570128: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570704: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564566672: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571856: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571664: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564560336: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564571472: TensorSpec(shape=(), dtype=tf.resource, name=None)
+  14564570512: TensorSpec(shape=(), dtype=tf.resource, name=None)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/convert.py:854: UserWarning: Statistics for quantized inputs were expected, but not specified; continuing anyway.
+  warnings.warn(
+W0000 00:00:1779933459.612867  929608 tf_tfl_flatbuffer_helpers.cc:365] Ignored output_format.
+W0000 00:00:1779933459.612876  929608 tf_tfl_flatbuffer_helpers.cc:368] Ignored drop_control_dependency.
+fully_quantize: 0, inference_type: 6, input_inference_type: FLOAT32, output_inference_type: FLOAT32
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+  [F32 ] top-1(acc)=1.000  EER=0.009  rej=0.07  arena=372.4KB  lat=0.0ms
+  [INT8] top-1(acc)=0.993  EER=0.009  rej=0.05  arena=100.2KB  lat=0.0ms
+
+  -> wrote LaTeX table to outputs/speaker/table_iv.tex
+
+Done. Outputs in outputs/speaker

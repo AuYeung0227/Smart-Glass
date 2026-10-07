@@ -1,0 +1,594 @@
+<title>OMI Glass 音频流水线</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #F4F6F5;
+    --surface: #FFFFFF;
+    --ink: #16211E;
+    --ink-soft: #55655F;
+    --accent: #0E7A6D;
+    --accent-strong: #0B5B52;
+    --accent-tint: #E2F0EC;
+    --warn: #B4561F;
+    --warn-tint: #FFF1E6;
+    --line: #DDE5E2;
+    --fig-bg: #FCFDFC;
+    --fig-ink: #16211E;
+    --fig-line: #D3DCD8;
+    --code-bg: #EFF3F1;
+    --code-ink: #0B5B52;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0E1513;
+      --surface: #16201D;
+      --ink: #E7EEEB;
+      --ink-soft: #97A7A1;
+      --accent: #3FD0B8;
+      --accent-strong: #8FE8DC;
+      --accent-tint: #17332C;
+      --warn: #E8A25A;
+      --warn-tint: #33240F;
+      --line: #27332F;
+      --fig-bg: #FCFDFC;
+      --fig-ink: #16211E;
+      --fig-line: #D3DCD8;
+      --code-bg: #1B2623;
+      --code-ink: #6FE0CD;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0E1513;
+    --surface: #16201D;
+    --ink: #E7EEEB;
+    --ink-soft: #97A7A1;
+    --accent: #3FD0B8;
+    --accent-strong: #8FE8DC;
+    --accent-tint: #17332C;
+    --warn: #E8A25A;
+    --warn-tint: #33240F;
+    --line: #27332F;
+    --fig-bg: #FCFDFC;
+    --fig-ink: #16211E;
+    --fig-line: #D3DCD8;
+    --code-bg: #1B2623;
+    --code-ink: #6FE0CD;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 56px 0 8px; }
+  .eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 18px;
+  }
+  .hero h1 {
+    font-family: "Archivo", sans-serif;
+    font-weight: 700;
+    font-size: clamp(34px, 5.4vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 18px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 22px;
+    text-wrap: balance;
+  }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-soft);
+    background: var(--surface);
+    font-variant-numeric: tabular-nums;
+  }
+  .chip b { color: var(--accent-strong); font-weight: 500; }
+  .wave {
+    display: block;
+    width: 100%;
+    height: 74px;
+    margin: 4px 0 6px;
+  }
+
+  /* ---------- TOC ---------- */
+  .toc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .toc-inner {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 10px 0;
+    white-space: nowrap;
+  }
+  .toc a {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+  }
+  .toc a:hover { color: var(--accent-strong); background: var(--accent-tint); }
+  .toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Sections ---------- */
+  main { padding: 40px 0 80px; }
+  .section { margin-top: 56px; }
+  .section:first-of-type { margin-top: 8px; }
+  .sec-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warn);
+    margin: 0 0 10px;
+  }
+  .section h2 {
+    font-family: "Archivo", sans-serif;
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .section p { max-width: 68ch; color: var(--ink); margin: 0 0 14px; }
+  .section p strong { color: var(--accent-strong); font-weight: 600; }
+  code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.9em;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1px 6px;
+    border-radius: 5px;
+  }
+
+  /* ---------- Figure cards (always light, like printed schematic) ---------- */
+  .fig {
+    background: var(--fig-bg);
+    border: 1px solid var(--fig-line);
+    border-radius: 12px;
+    padding: 20px 20px 14px;
+    margin: 22px 0;
+  }
+  .fig-caption {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .mermaid { overflow-x: auto; }
+  .mermaid svg { max-width: 100%; height: auto; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+  .sw-src { background: #E2F0EC; border: 1.5px solid #0E7A6D; }
+  .sw-buf { background: #F1F4F3; border: 1.5px solid #7C8B86; }
+  .sw-proc { background: #FFF1E6; border: 1.5px solid #B4561F; }
+  .sw-sink { background: #E7EEF6; border: 1.5px solid #3B6FA0; }
+
+  /* ---------- Code references ---------- */
+  .refs {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .refs li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 9px 2px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .refs .f { font-family: "JetBrains Mono", monospace; color: var(--accent-strong); font-weight: 500; }
+  .refs .l { font-family: "JetBrains Mono", monospace; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .refs .d { color: var(--ink-soft); flex: 1; }
+
+  /* ---------- Byte packet strips ---------- */
+  .packet { margin: 14px 0 20px; }
+  .pkt-label { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  .byte-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .byte {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    padding: 8px 13px;
+    border-radius: 8px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .byte-hdr { background: var(--accent-tint); color: var(--accent-strong); border: 1px solid var(--accent); }
+  .byte-data { background: var(--surface); color: var(--ink); border: 1px solid var(--line); flex: 1; min-width: 160px; }
+  .pkt-caption { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+
+  /* ---------- Tables ---------- */
+  .table-scroll { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--surface); }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    background: var(--paper);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .val { color: var(--accent-strong); font-weight: 500; }
+
+  /* ---------- Notes ---------- */
+  .notes { display: grid; gap: 14px; }
+  .note {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--warn);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .note h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .note p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+  .note p code { background: var(--warn-tint); color: var(--warn); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 26px 0 40px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-family: "JetBrains Mono", monospace;
+  }
+</style>
+
+<div class="hero wrap">
+  <p class="eyebrow">OMI Glass Firmware · ESP32-S3 · v2.3.2</p>
+  <h1>OMI Glass 音频流水线</h1>
+  <p class="lede">从板载 PDM 麦克风采集，到 Opus 压缩编码，再到 BLE 推流到手机的完整链路 —— 每一级缓冲区、每一处编码参数与发送逻辑，配数据流图逐段拆解。</p>
+  <div class="meta">
+    <span class="chip">采样率 <b>16 kHz</b></span>
+    <span class="chip">帧长 <b>320 样本 / 20 ms</b></span>
+    <span class="chip">码率 <b>32 kbps</b></span>
+    <span class="chip">codec ID <b>21</b></span>
+    <span class="chip">单声道 · VOIP</span>
+  </div>
+  <canvas class="wave" id="wave" aria-hidden="true"></canvas>
+</div>
+
+<nav class="toc">
+  <div class="wrap toc-inner">
+    <a href="#overview">总览</a>
+    <a href="#mic">麦克风接收</a>
+    <a href="#opus">Opus 压缩</a>
+    <a href="#send">BLE 发送</a>
+    <a href="#buffers">缓冲区</a>
+    <a href="#settings">关键设置</a>
+    <a href="#notes">注意事项</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="section" id="overview">
+    <p class="sec-tag">Stage 0</p>
+    <h2>总览：三级缓冲流水线</h2>
+    <p>整条链路跑在 <code>loop_app()</code> 的<strong>单线程轮询</strong>里，没有 FreeRTOS 任务。数据依次经过三块环形缓冲：<code>i2s_read_buffer</code>（采集）→ <code>pcm_ring_buffer</code>（编码前排队）→ <code>audio_tx_buffer</code>（发送排队）。每轮 loop 依次调用 <code>mic_process()</code>、<code>opus_process()</code>、<code>processAudioTx()</code>。</p>
+    <div class="fig">
+      <p class="fig-caption">图 0 · 端到端数据流</p>
+      <pre class="mermaid">
+flowchart LR
+  MIC["PDM 麦克风<br/>GPIO41 · 42"] --> I2S["I2S 外设<br/>PDM 模式"] --> DMA["8 × 256<br/>DMA 缓冲"]
+  DMA --> RB["i2s_read_buffer<br/>PSRAM · 1600 样本"]
+  RB -->|"×2 增益 · 限幅"| OMD["onMicData"]
+  OMD -->|"opus_receive_pcm"| PRB["pcm_ring_buffer<br/>PSRAM · 8000 样本"]
+  PRB -->|"取 320 样本"| ENC["opus_encode<br/>20ms 至 160 字节"]
+  ENC --> OOB["opus_output_buffer"]
+  OOB -->|"onOpusEncoded"| TXB["audio_tx_buffer<br/>RAM · 16 帧"]
+  TXB -->|"3 字节头 · notify"| BLE["audioDataCharacteristic<br/>BLE 至 App"]
+  class MIC,I2S,DMA src;
+  class RB,PRB,OOB,TXB buf;
+  class OMD,ENC proc;
+  class BLE sink;
+  classDef src fill:#E2F0EC,stroke:#0E7A6D,color:#16211E;
+  classDef buf fill:#F1F4F3,stroke:#7C8B86,color:#16211E;
+  classDef proc fill:#FFF1E6,stroke:#B4561F,color:#16211E;
+  classDef sink fill:#E7EEF6,stroke:#3B6FA0,color:#16211E;
+      </pre>
+      <div class="legend">
+        <span><i class="swatch sw-src"></i>硬件 / 源</span>
+        <span><i class="swatch sw-buf"></i>缓冲区</span>
+        <span><i class="swatch sw-proc"></i>处理</span>
+        <span><i class="swatch sw-sink"></i>BLE / App</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="mic">
+    <p class="sec-tag">Stage 1</p>
+    <h2>麦克风接收：I2S PDM 采集</h2>
+    <p>XIAO ESP32S3 Sense 板载 PDM 数字麦克风，挂在 <code>GPIO41</code>（数据）与 <code>GPIO42</code>（时钟）。I2S 外设工作于 <code>MASTER | RX | PDM</code> 模式，硬件内部把 1-bit PDM 流滤波成 16-bit PCM，经 8×256 的 DMA 环形缓冲不间断搬运。</p>
+    <div class="fig">
+      <p class="fig-caption">图 1 · 采集段数据流</p>
+      <pre class="mermaid">
+flowchart TD
+  PDM["PDM 麦克风<br/>1-bit PDM 流"] -->|"CLK GPIO42 · DATA GPIO41"| I2S["I2S 外设 I2S_NUM_0<br/>MASTER · RX · PDM"]
+  I2S -->|"硬件 PDM 转 PCM 滤波"| DMA["DMA 环形<br/>8 缓冲 × 256 样本"]
+  DMA -->|"i2s_read 阻塞 20ms 内"| RB["i2s_read_buffer<br/>PSRAM · 1600 int16 · 100ms"]
+  RB -->|"×2 增益 · 钳位"| CB["audio_callback<br/>onMicData"]
+  CB -->|"opus_receive_pcm"| PRB["至 PCM 环形缓冲"]
+  class PDM,I2S,DMA src;
+  class RB,PRB buf;
+  class CB proc;
+  classDef src fill:#E2F0EC,stroke:#0E7A6D,color:#16211E;
+  classDef buf fill:#F1F4F3,stroke:#7C8B86,color:#16211E;
+  classDef proc fill:#FFF1E6,stroke:#B4561F,color:#16211E;
+  classDef sink fill:#E7EEF6,stroke:#3B6FA0,color:#16211E;
+      </pre>
+      <div class="legend">
+        <span><i class="swatch sw-src"></i>硬件 / 源</span>
+        <span><i class="swatch sw-buf"></i>缓冲区</span>
+        <span><i class="swatch sw-proc"></i>处理</span>
+      </div>
+    </div>
+    <p>读出的原始 PCM 每样本乘 <code>MIC_GAIN = 2</code> 增益，并钳位到 16-bit 范围 <code>-32768…32767</code> 后，经回调 <code>onMicData()</code> 送入编码器。读缓冲优先用 <code>ps_malloc()</code> 放到 PSRAM，失败退回普通 <code>malloc()</code>。</p>
+    <ul class="refs">
+      <li><span class="f">config.h</span><span class="l">:126-131</span><span class="d">PDM 引脚 GPIO42/41、16 kHz、1600 样本、增益 2</span></li>
+      <li><span class="f">mic.cpp</span><span class="l">:28-42</span><span class="d">PSRAM 分配 i2s_read_buffer，失败回退 malloc</span></li>
+      <li><span class="f">mic.cpp</span><span class="l">:45-57</span><span class="d">i2s_config：MASTER|RX|PDM，8×256 DMA</span></li>
+      <li><span class="f">mic.cpp</span><span class="l">:60-65</span><span class="d">PDM 引脚映射（CLK 挂 ws，DATA 挂 data_in）</span></li>
+      <li><span class="f">mic.cpp</span><span class="l">:114-144</span><span class="d">mic_process()：i2s_read + 增益 + 回调</span></li>
+    </ul>
+  </section>
+
+  <section class="section" id="opus">
+    <p class="sec-tag">Stage 2</p>
+    <h2>Opus 压缩与编码</h2>
+    <p>PCM 先进入 500ms 的 <code>pcm_ring_buffer</code> 解耦采集与编码；<code>opus_process()</code> 每攒够 320 样本（20ms）取一帧，交给 Opus 库压成最多 160 字节的包。编码器参数：16kHz 单声道、VOIP 应用、32kbps、复杂度 3、可变码率。</p>
+    <div class="fig">
+      <p class="fig-caption">图 2 · 编码段数据流</p>
+      <pre class="mermaid">
+flowchart TD
+  IN["onMicData 的 PCM 块"] -->|"逐样本写入"| PRB["pcm_ring_buffer<br/>PSRAM · 8000 int16 · 500ms<br/>环形读写指针"]
+  PRB -->|"available 大于等于 320 时取帧"| IB["opus_input_buffer<br/>320 int16 · 20ms"]
+  IB -->|"opus_encode"| ENC["Opus 编码器<br/>16kHz · 单声道 · VOIP<br/>32kbps · 复杂度3 · VBR"]
+  ENC -->|"640 字节 至 160 字节"| OB["opus_output_buffer<br/>160 字节内"]
+  OB -->|"encoded_callback"| OENC["onOpusEncoded"]
+  class IN,ENC proc;
+  class PRB,IB,OB buf;
+  class OENC sink;
+  classDef src fill:#E2F0EC,stroke:#0E7A6D,color:#16211E;
+  classDef buf fill:#F1F4F3,stroke:#7C8B86,color:#16211E;
+  classDef proc fill:#FFF1E6,stroke:#B4561F,color:#16211E;
+  classDef sink fill:#E7EEF6,stroke:#3B6FA0,color:#16211E;
+      </pre>
+      <div class="legend">
+        <span><i class="swatch sw-buf"></i>缓冲区</span>
+        <span><i class="swatch sw-proc"></i>处理</span>
+        <span><i class="swatch sw-sink"></i>回调 / 下一级</span>
+      </div>
+    </div>
+    <p>环形缓冲写满时<strong>丢弃最旧样本</strong>（<code>opus_receive_pcm</code> 内的指针前移），编码帧大小必须严格等于 320，否则直接返回错误。真正压缩发生在 <code>opus_encode()</code>：640 字节 PCM → ≤160 字节 Opus 帧。</p>
+    <ul class="refs">
+      <li><span class="f">config.h</span><span class="l">:137-142</span><span class="d">帧 320 / 输出上限 160B / 32kbps / 复杂度 3 / VBR</span></li>
+      <li><span class="f">opus_encoder.cpp</span><span class="l">:31-54</span><span class="d">三块 PSRAM 缓冲：ring 8000、output 160、input 320</span></li>
+      <li><span class="f">opus_encoder.cpp</span><span class="l">:57-79</span><span class="d">创建编码器 + 九项 opus_encoder_ctl 参数</span></li>
+      <li><span class="f">opus_encoder.cpp</span><span class="l">:98-113</span><span class="d">opus_receive_pcm：环形写入，满则丢最旧</span></li>
+      <li><span class="f">opus_encoder.cpp</span><span class="l">:124-144</span><span class="d">opus_encode_frame：校验帧长并调 opus_encode</span></li>
+      <li><span class="f">opus_encoder.cpp</span><span class="l">:146-167</span><span class="d">opus_process：攒帧 → 编码 → 回调</span></li>
+    </ul>
+  </section>
+
+  <section class="section" id="send">
+    <p class="sec-tag">Stage 3</p>
+    <h2>发送：BLE 通知推流</h2>
+    <p>每编码出一帧，<code>onOpusEncoded()</code> 把「2 字节长度 + 数据」写入 <code>audio_tx_buffer</code> 发送环形缓冲（16 帧）。<code>processAudioTx()</code> 排空队列，<code>broadcastAudioPacket()</code> 加 3 字节头后 <code>notify()</code> 出去。</p>
+    <div class="fig">
+      <p class="fig-caption">图 3 · 发送段数据流</p>
+      <pre class="mermaid">
+flowchart TD
+  OENC["onOpusEncoded"] -->|"写 len 2字节 + 数据 入队"| TXB["audio_tx_buffer<br/>RAM · 16 帧 · 162 字节每帧<br/>环形读写指针"]
+  TXB -->|"while 非空 逐帧"| PAF["processAudioTx"]
+  PAF -->|"加 3 字节头"| PKT["audio_packet_buffer<br/>idx低 · idx高 · sub · data"]
+  PKT -->|"setValue + notify"| BLE["audioDataCharacteristic<br/>READ · NOTIFY · CCCD"]
+  BLE -->|"connected 且 subscribed"| APP["手机 App"]
+  class OENC,PAF proc;
+  class TXB,PKT buf;
+  class BLE,APP sink;
+  classDef src fill:#E2F0EC,stroke:#0E7A6D,color:#16211E;
+  classDef buf fill:#F1F4F3,stroke:#7C8B86,color:#16211E;
+  classDef proc fill:#FFF1E6,stroke:#B4561F,color:#16211E;
+  classDef sink fill:#E7EEF6,stroke:#3B6FA0,color:#16211E;
+      </pre>
+      <div class="legend">
+        <span><i class="swatch sw-buf"></i>缓冲区</span>
+        <span><i class="swatch sw-proc"></i>处理</span>
+        <span><i class="swatch sw-sink"></i>BLE / App</span>
+      </div>
+    </div>
+    <div class="packet">
+      <div class="pkt-label">audio_tx_buffer 内部格式（入队）</div>
+      <div class="byte-row">
+        <span class="byte byte-hdr">len 低字节</span>
+        <span class="byte byte-hdr">len 高字节</span>
+        <span class="byte byte-data">Opus 帧数据 · len 字节</span>
+      </div>
+      <div class="pkt-caption">2 字节长度前缀 + 数据，写满则丢弃该包。</div>
+    </div>
+    <div class="packet">
+      <div class="pkt-label">BLE 音频包格式（notify 发出）</div>
+      <div class="byte-row">
+        <span class="byte byte-hdr">index 低字节</span>
+        <span class="byte byte-hdr">index 高字节</span>
+        <span class="byte byte-hdr">sub-index · 0</span>
+        <span class="byte byte-data">Opus 帧数据 · len 字节</span>
+      </div>
+      <div class="pkt-caption">AUDIO_PACKET_HEADER_SIZE = 3，包序号自增（audioPacketIndex++）。</div>
+    </div>
+    <p>发送仅在 <code>connected</code> 且客户端已订阅通知（<code>audioSubscribed</code>）时进行；订阅状态由 CCCD 描述符回调 <code>AudioCCCDCallback::onWrite</code> 检测。每包发送后 <code>delay(1)</code> 防止 BLE 拥塞。Codec 特征值读取时返回 <code>21</code>（Opus），告诉 App 解码方式。</p>
+    <ul class="refs">
+      <li><span class="f">app.cpp</span><span class="l">:82-86</span><span class="d">audio_tx_buffer（16×162）与 packet buffer 定义</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:330-359</span><span class="d">onOpusEncoded：写入发送环形缓冲，溢出丢弃</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:361-378</span><span class="d">broadcastAudioPacket：组 3 字节头 + notify</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:380-417</span><span class="d">processAudioTx：排空队列，每包 delay(1)</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:597-609</span><span class="d">BLE 特征值：audioData（NOTIFY）+ codec（READ）</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:443-459</span><span class="d">AudioCCCDCallback：置位 audioSubscribed</span></li>
+      <li><span class="f">app.cpp</span><span class="l">:882-891</span><span class="d">loop_app：mic_process + opus_process + processAudioTx</span></li>
+    </ul>
+  </section>
+
+  <section class="section" id="buffers">
+    <p class="sec-tag">Appendix A</p>
+    <h2>缓冲区一览</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>缓冲</th><th>大小</th><th>内存</th><th>定义处</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">DMA 缓冲</td><td class="mono">8 × 256 样本</td><td class="mono">内部 SRAM</td><td class="mono">mic.cpp:52-53</td><td>I2S 硬件搬运，防丢数据</td></tr>
+          <tr><td class="mono">i2s_read_buffer</td><td class="mono">1600×int16 · 3200 B</td><td class="mono">PSRAM</td><td class="mono">mic.cpp:29</td><td>麦克风原始 PCM（100ms）</td></tr>
+          <tr><td class="mono">pcm_ring_buffer</td><td class="mono">8000×int16 · 16 KB</td><td class="mono">PSRAM</td><td class="mono">opus_encoder.cpp:31</td><td>采集/编码解耦（500ms）</td></tr>
+          <tr><td class="mono">opus_input_buffer</td><td class="mono">320×int16 · 640 B</td><td class="mono">PSRAM</td><td class="mono">opus_encoder.cpp:46</td><td>单帧输入（20ms）</td></tr>
+          <tr><td class="mono">opus_output_buffer</td><td class="mono">160 B</td><td class="mono">PSRAM</td><td class="mono">opus_encoder.cpp:38</td><td>单帧 Opus 输出</td></tr>
+          <tr><td class="mono">audio_tx_buffer</td><td class="mono">16 × 162 · 2592 B</td><td class="mono">普通 RAM</td><td class="mono">app.cpp:82-83</td><td>编码帧发送排队</td></tr>
+          <tr><td class="mono">audio_packet_buffer</td><td class="mono">163 B</td><td class="mono">普通 RAM</td><td class="mono">app.cpp:86</td><td>组 BLE 包（头+数据）</td></tr>
+          <tr><td class="mono">temp_data</td><td class="mono">160 B</td><td class="mono">普通 RAM · static</td><td class="mono">app.cpp:403</td><td>从环形缓冲临时取出</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" id="settings">
+    <p class="sec-tag">Appendix B</p>
+    <h2>关键设置（config.h）</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>宏</th><th>值</th><th>含义</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">MIC_SAMPLE_RATE</td><td class="mono"><span class="val">16000</span></td><td>采样率 16 kHz</td></tr>
+          <tr><td class="mono">MIC_BUFFER_SAMPLES</td><td class="mono"><span class="val">1600</span></td><td>单次读 100ms</td></tr>
+          <tr><td class="mono">MIC_GAIN</td><td class="mono"><span class="val">2</span></td><td>软件增益 ×2</td></tr>
+          <tr><td class="mono">AUDIO_RING_BUFFER_SAMPLES</td><td class="mono"><span class="val">8000</span></td><td>PCM 环形缓冲 500ms</td></tr>
+          <tr><td class="mono">OPUS_FRAME_SAMPLES</td><td class="mono"><span class="val">320</span></td><td>每帧 20ms</td></tr>
+          <tr><td class="mono">OPUS_BITRATE</td><td class="mono"><span class="val">32000</span></td><td>码率 32 kbps</td></tr>
+          <tr><td class="mono">OPUS_COMPLEXITY</td><td class="mono"><span class="val">3</span></td><td>编码复杂度（1–10）</td></tr>
+          <tr><td class="mono">OPUS_VBR</td><td class="mono"><span class="val">1</span></td><td>可变码率</td></tr>
+          <tr><td class="mono">AUDIO_CODEC_ID</td><td class="mono"><span class="val">21</span></td><td>BLE 上报的 Opus 编码 ID</td></tr>
+          <tr><td class="mono">AUDIO_TX_RING_BUFFER_SIZE</td><td class="mono"><span class="val">16</span></td><td>发送缓冲帧数</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" id="notes">
+    <p class="sec-tag">Appendix C</p>
+    <h2>注意事项</h2>
+    <div class="notes">
+      <div class="note">
+        <h3>三级缓冲是「吸收抖动」，不是异步并发</h3>
+        <p>整条链路在同一个 <code>loop_app()</code> 单线程里轮询，中间两级环形缓冲主要吸收瞬时抖动（如 BLE notify 瞬间阻塞），编码与发送靠每轮 loop 的 while 循环尽力排空。</p>
+      </div>
+      <div class="note">
+        <h3>mulaw.h 是死代码</h3>
+        <p><code>linear2ulaw()</code> 定义了 μ-law 编码器，但全工程无任何调用点，当前固件 100% 走 Opus，是遗留或低带宽备选方案。</p>
+      </div>
+      <div class="note">
+        <h3>编码 ID 注释自相矛盾</h3>
+        <p><code>opus_encoder.cpp:169-174</code> 注释写「Codec ID 20 = Opus」「Actually Omi uses 21」，实际返回 <code>AUDIO_CODEC_ID = 21</code>，生效值是 21。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">OMI Glass Firmware · 音频流水线参考 · mic.cpp / opus_encoder.cpp / app.cpp / config.h</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    fontFamily: '"IBM Plex Sans", sans-serif',
+    flowchart: { useMaxWidth: true, htmlLabels: true }
+  });
+</script>
+<script>
+  (function () {
+    var cv = document.getElementById('wave');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    function draw() {
+      var dpr = window.devicePixelRatio || 1;
+      var w = cv.clientWidth, h = cv.clientHeight;
+      if (w === 0 || h === 0) return;
+      cv.width = w * dpr; cv.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      var cs = getComputedStyle(document.documentElement);
+      var a = cs.getPropertyValue('--accent').trim() || '#0E7A6D';
+      var b = cs.getPropertyValue('--warn').trim() || '#B4561F';
+      var grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, a); grad.addColorStop(1, b);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath();
+      var mid = h / 2;
+      for (var x = 0; x <= w; x++) {
+        var t = x / w;
+        var env = Math.sin(t * Math.PI);
+        var y = mid + Math.sin(t * Math.PI * 7) * env * (h * 0.38);
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    draw();
+    window.addEventListener('resize', draw);
+  })();
+</script>

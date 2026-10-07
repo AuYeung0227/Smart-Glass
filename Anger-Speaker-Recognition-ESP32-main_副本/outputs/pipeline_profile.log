@@ -1,0 +1,32 @@
+/Users/hmitre/Library/CloudStorage/GoogleDrive-hmitre@cimat.mx/Mi unidad/CIMAT_OFICIAL/CODING/ANGRY_VS/.venv/lib/python3.12/site-packages/tensorflow/lite/python/interpreter.py:457: UserWarning:     Warning: tf.lite.Interpreter is deprecated and is scheduled for deletion in
+    TF 2.20. Please use the LiteRT interpreter from the ai_edge_litert package.
+    See the [migration guide](https://ai.google.dev/edge/litert/migration)
+    for details.
+    
+  warnings.warn(_INTERPRETER_DELETION_WARNING)
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+[host] Measuring TFLite latency on this machine ...
+        anger:   host_lat=0.03 ms  arena=210.9 KB
+        speaker: host_lat=0.00 ms  arena=21.6 KB
+[device] No serial log supplied; producing host-only estimates.
+
+======================================================================
+  Pipeline latency profile (Table VI)
+======================================================================
+  I2S audio capture (2 s window)              2000.00 ms     --  %   [informational (2-s capture window, non-additive)]
+  MFCC extraction                              190.00 ms    40.8 %   [imputed (typical ESP32-S3 MFCC @ 16 kHz)]
+  MicroLightCNN inference (F32)                219.00 ms    47.0 %   [imputed (typical ESP32-S3 MicroLightCNN F32 @ 240 MHz)]
+  Xi-Vector pooling + StandardScaler             1.00 ms     0.2 %   [imputed (deterministic pooling)]
+  MLP-XiEmbedding inference (INT8)              55.00 ms    11.8 %   [imputed (typical ESP32-S3 MLP-XiEmbedding INT8)]
+  Decision fusion + temporal voting              0.50 ms     0.1 %   [imputed (sub-ms thresholding)]
+  End-to-end                                   465.50 ms   100.0 %   [imputed (sum of stages, excludes I2S window)]
+
+Memory footprint:
+  anger_arena_kb          : 210.9
+  speaker_arena_kb        : 21.6
+  total_arena_kb          : 232.5
+  ram_libre_kb_mean       : None
+  psram_libre_kb_mean     : None
+  -> wrote LaTeX table to outputs/pipeline/table_vi.tex
+
+Done. Outputs in outputs/pipeline
