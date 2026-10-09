@@ -200,6 +200,16 @@ typedef enum {
 #define VP_CMD_REPLAY 0x20    // 开始回传全部录音（按时间顺序，逐帧带北京时间戳）
 #define VP_CMD_SET_TIME 0x21  // 手机对时：负载 = 4 字节小端 unix 时间戳（秒）
 #define VP_CMD_REPLAY_STOP 0x22 // 停止回传
+#define VP_CMD_AUDIO_SEND_START 0x30 // 开始/恢复实时推送（若在回放则先停回放）
+#define VP_CMD_AUDIO_SEND_PAUSE 0x31 // 暂停实时推送（若在回放则先停回放）
+
+// --- 蓝牙实时音频推送状态（0x30 / 0x31 控制；回放 0x20 会抢占）---
+// 说明：0x30/0x31 与 OTA 状态码数值相同，但分属不同特征/通道，互不冲突。
+typedef enum {
+    BLE_AUDIO_TX_PAUSED = 0,   // 暂停：不向手机推送（开机默认）
+    BLE_AUDIO_TX_LIVE   = 1,   // 实时发送：0x30 后持续推送当前编码帧
+    BLE_AUDIO_TX_REPLAY = 2,   // 回放中：0x20 触发，抢占实时发送
+} ble_audio_tx_state_t;
 
 // --- 录音回传 ---
 // 回传按 granule 差值还原原始时间轴（含被删静音的间隔）；每帧间隔截断到该范围。

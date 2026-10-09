@@ -318,7 +318,10 @@ void onMicRecord(int16_t *data, size_t samples)
 // 的静音段，回传时表现为对应的等待间隔。回传期间实时音频推送暂停，
 // 避免两路包在同一个特征上混淆。
 // -------------------------------------------------------------------------
-static bool replayActive = false;                 // 回传开关
+// 默认「暂停」：手机订阅音频通知（写 CCCD）时自动切到 LIVE，
+// 见 AudioCCCDCallback::onWrite()。0x31 可手动暂停，0x30 手动恢复。
+static volatile ble_audio_tx_state_t bleAudioTxState = BLE_AUDIO_TX_PAUSED; // 当前蓝牙推送状态（开机默认暂停）
+static ble_audio_tx_state_t replayPrevState = BLE_AUDIO_TX_PAUSED;          // 进入回放前的状态，回放结束后恢复
 static char replayFiles[REPLAY_MAX_FILES][64];    // 按时间升序的文件名列表
 static int replayFileCount = 0;
 static int replayFileIdx = 0;
@@ -370,9 +373,34 @@ static bool openNextReplayFile()
     return false;
 }
 
+// 蓝牙推送状态 → 中文名（仅用于串口日志，仿 voiceprintCmdName）。
+// 入参 s：要查询的状态（ble_audio_tx_state_t，定义在 config.h）。
+// 返回：静态字符串，调用方不得释放。
+static const char *bleAudioTxStateName(ble_audio_tx_state_t s)
+{
+    switch (s) {                                          // 按状态枚举分派
+    case BLE_AUDIO_TX_PAUSED: return "暂停";               // 不推送
+    case BLE_AUDIO_TX_LIVE:   return "实时发送";           // 持续推送
+    case BLE_AUDIO_TX_REPLAY: return "回放中";             // 回传抢占
+    default:                  return "未知";               // 兜底
+    }
+}
+
+// 统一的推送状态切换出口：写全局状态（bleAudioTxState，定义在本文件 321 行附近）
+// 并打印一行日志。所有状态变更都应经此函数，避免漏打印/漏改。
+// 入参 s：目标状态（ble_audio_tx_state_t，定义在 config.h）。无返回值。
+static void bleAudioTxSetState(ble_audio_tx_state_t s)
+{
+    if (bleAudioTxState == s) {                           // 状态未变化则不重复打印
+        return;
+    }
+    bleAudioTxState = s;                                  // 更新全局状态
+    Serial.printf("【音频】推送状态 → %s\n", bleAudioTxStateName(s)); // 串口回显
+}
+
 static void startReplay()
 {
-    if (replayActive) {
+    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 已在回放则忽略重复请求
         Serial.println("【回传】已在回传中");
         return;
     }
@@ -385,19 +413,40 @@ static void startReplay()
     replaySeq = 0;
     replayFrameCount = 0;
     replayNextSendMs = 0;
-    replayActive = true;
+    replayPrevState = bleAudioTxState;                    // 记住回放前的状态，回放结束恢复
+    bleAudioTxSetState(BLE_AUDIO_TX_REPLAY);              // 切入回放态（抢占实时发送）
     Serial.printf("【回传】开始回传 %d 条录音\n", replayFileCount);
 }
 
 static void stopReplay()
 {
-    if (!replayActive) {
+    if (bleAudioTxState != BLE_AUDIO_TX_REPLAY) {         // 未在回放则无需处理
         return;
     }
-    openReplayFileCleanup();
-    replayActive = false;
+    openReplayFileCleanup();                              // 关闭当前回传文件/解复用器
+    bleAudioTxSetState(replayPrevState);                  // 恢复到进入回放前的状态
     Serial.printf("【回传】已停止（共回传 %lu 帧）\n",
                   (unsigned long)replayFrameCount);
+}
+
+// 0x30：请求切到「实时发送」。若正在回放，先停回放（实时优先）。
+// 无入参、无返回值；供 voiceprintHandleCommand() 的命令分支调用。
+static void bleAudioTxRequestLive()
+{
+    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 回放中：先收尾回放
+        stopReplay();
+    }
+    bleAudioTxSetState(BLE_AUDIO_TX_LIVE);                // 切到实时发送（幂等）
+}
+
+// 0x31：请求「暂停推送」。若正在回放，先停回放。
+// 无入参、无返回值；供 voiceprintHandleCommand() 的命令分支调用。
+static void bleAudioTxRequestPause()
+{
+    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 回放中：先收尾回放
+        stopReplay();
+    }
+    bleAudioTxSetState(BLE_AUDIO_TX_PAUSED);              // 切到暂停（幂等）
 }
 
 // 回传一帧（由 loop_app 在回传期间反复调用，非阻塞）。
@@ -411,7 +460,7 @@ static void pumpReplay()
     if (!replayReaderOpen && !openNextReplayFile()) {
         Serial.printf("【回传】回传完成（共 %lu 帧）\n",
                       (unsigned long)replayFrameCount);
-        replayActive = false;
+        bleAudioTxSetState(replayPrevState);              // 回放自然结束，恢复回放前的状态
         return;
     }
 
@@ -478,6 +527,8 @@ static const char *voiceprintCmdName(uint8_t cmd)
     case VP_CMD_REPLAY:    return "开始回传";
     case VP_CMD_SET_TIME:  return "对时";
     case VP_CMD_REPLAY_STOP: return "停止回传";
+    case VP_CMD_AUDIO_SEND_START: return "开始推送音频";   // 0x30
+    case VP_CMD_AUDIO_SEND_PAUSE: return "暂停推送音频";   // 0x31
     default:            return "未知";
     }
 }
@@ -504,10 +555,11 @@ static void voiceprintHandleCommand(uint8_t cmd)
         speaker_monitor_erase_template();
         break;
     case VP_CMD_STATUS:
-        Serial.printf("【命令】状态=%s 模板=%s 已录取段数=%d\n",
+        Serial.printf("【命令】状态=%s 模板=%s 已录取段数=%d 音频推送=%s\n",
                       speaker_monitor_state_name(),
                       speaker_monitor_has_template() ? "有" : "无",
-                      speaker_monitor_enroll_segments());
+                      speaker_monitor_enroll_segments(),
+                      bleAudioTxStateName(bleAudioTxState));   // 追加当前蓝牙推送状态
         break;
     case VP_CMD_REC_START:
         // 主动录音优先级更高：先停掉被动录音，再开始连续录制。
@@ -533,6 +585,12 @@ static void voiceprintHandleCommand(uint8_t cmd)
         break;
     case VP_CMD_REPLAY_STOP:
         stopReplay();
+        break;
+    case VP_CMD_AUDIO_SEND_START:
+        bleAudioTxRequestLive();                          // 0x30：开始/恢复实时推送
+        break;
+    case VP_CMD_AUDIO_SEND_PAUSE:
+        bleAudioTxRequestPause();                         // 0x31：暂停实时推送
         break;
     case VP_CMD_SET_TIME:
         // 0x21 的负载（4 字节 unix）由 pollVoiceprintCommands() 解析，
@@ -590,6 +648,10 @@ static void pollVoiceprintCommands()
                 voiceprintHandleCommand(VP_CMD_REPLAY);
             } else if (!strcasecmp(line, "replaystop")) {
                 voiceprintHandleCommand(VP_CMD_REPLAY_STOP);
+            } else if (!strcasecmp(line, "sendstart")) {
+                voiceprintHandleCommand(VP_CMD_AUDIO_SEND_START);   // 串口别名：开始推送
+            } else if (!strcasecmp(line, "sendstop")) {
+                voiceprintHandleCommand(VP_CMD_AUDIO_SEND_PAUSE);   // 串口别名：暂停推送
             } else if (!strcasecmp(line, "sdcheck")) {
                 recorder_sd_check();
             } else if (!strcasecmp(line, "sdprobe")) {
@@ -708,6 +770,10 @@ void processAudioTx()
         return;
     }
 
+    // 只有「实时发送」态才真正推给手机；暂停/回放态只排空缓冲、不发送。
+    // 这样暂停期不会积压陈旧音频，恢复后从当下开始，无突发补发。
+    const bool send = (bleAudioTxState == BLE_AUDIO_TX_LIVE);   // 本轮是否真正推送
+
     // Check if we have data in the ring buffer
     while (audio_tx_read_pos != audio_tx_write_pos) {
         // Read length
@@ -720,20 +786,23 @@ void processAudioTx()
             continue;
         }
 
-        // Read data
-        static uint8_t temp_data[OPUS_OUTPUT_MAX_BYTES];
-        for (size_t i = 0; i < len; i++) {
-            temp_data[i] = audio_tx_buffer[(audio_tx_read_pos + 2 + i) % AUDIO_TX_BUFFER_SIZE];
-        }
-
-        // Update read position
+        // Update read position（无论推不推送都推进读指针 → 暂停期的帧被丢弃）
+        size_t saved_read = audio_tx_read_pos;                  // 暂存本帧起始，供拷贝用
         audio_tx_read_pos = (audio_tx_read_pos + 2 + len) % AUDIO_TX_BUFFER_SIZE;
 
-        // Send packet
-        broadcastAudioPacket(temp_data, len);
+        if (send) {
+            // Read data
+            static uint8_t temp_data[OPUS_OUTPUT_MAX_BYTES];    // 单帧临时缓冲（静态，避免占栈）
+            for (size_t i = 0; i < len; i++) {                  // 逐个字节拷出（环形，需取模）
+                temp_data[i] = audio_tx_buffer[(saved_read + 2 + i) % AUDIO_TX_BUFFER_SIZE];
+            }
 
-        // Small delay to prevent BLE congestion
-        delay(1);
+            // Send packet
+            broadcastAudioPacket(temp_data, len);               // 真正 notify 给手机
+
+            // Small delay to prevent BLE congestion
+            delay(1);                                           // 仅在推送时限速，防 BLE 拥塞
+        }
     }
 }
 
@@ -775,6 +844,11 @@ class AudioCCCDCallback : public BLEDescriptorCallbacks
             if (value[0] & 0x01) {
                 audioSubscribed = true;
                 Serial.println("Audio notifications enabled");
+                // 订阅即开始：手机开启音频通知 = 明确「要音频」，自动切到实时发送。
+                // 若正在回放（REPLAY）则不打断，由回放结束后的状态恢复逻辑接管。
+                if (bleAudioTxState == BLE_AUDIO_TX_PAUSED) {   // 仅从暂停态自动开始
+                    bleAudioTxSetState(BLE_AUDIO_TX_LIVE);      // 切到实时发送
+                }
             } else {
                 audioSubscribed = false;
                 Serial.println("Audio notifications disabled");
@@ -922,8 +996,11 @@ void configure_ble()
     audioCodecCharacteristic->setValue(&codecId, 1);
 
     // Voiceprint control characteristic: 1-byte commands (enroll/abort/finish/erase/status)
+    // 同时支持「有响应写」与「无响应写」：不少客户端/调试工具默认用 Write Without Response，
+    // 若只声明 PROPERTY_WRITE，该写入会在 GATT 层被直接拒收，onWrite() 不会被调用，
+    // 表现为「发了命令没反应、也不报错」。
     voiceprintControlCharacteristic = service->createCharacteristic(
-        voiceprintControlUUID, BLECharacteristic::PROPERTY_WRITE);
+        voiceprintControlUUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
     voiceprintControlCharacteristic->setCallbacks(new VoiceprintControlCallback());
 
     // Battery Service
@@ -1036,6 +1113,11 @@ void setup_app()
 
     // Initialize audio subsystem
     Serial.println("Initializing audio subsystem...");
+
+    // 开机初始推送状态：默认「暂停」，手机订阅音频通知后自动开始推送。
+    Serial.printf("【音频】推送状态 → %s（手机订阅音频特征后自动开始；0x31 暂停，0x30 恢复）\n",
+                  bleAudioTxStateName(bleAudioTxState));
+
     if (opus_encoder_init()) {
         opus_set_callback(onOpusEncoded);
 
@@ -1094,11 +1176,12 @@ void loop_app()
 
     // Send audio packets over BLE. During replay the live stream pauses so
     // the replayed frames (with timestamps) don't interleave with live ones.
+    // 三态状态机：回放走 pumpReplay；实时/暂停都走 processAudioTx（由状态决定是否真发）。
     if (connected && audioSubscribed) {
-        if (replayActive) {
+        if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {       // 回放态：推回传帧
             pumpReplay();
         } else {
-            processAudioTx();
+            processAudioTx();                               // 实时态=发送，暂停态=只排空缓冲
         }
     }
 
