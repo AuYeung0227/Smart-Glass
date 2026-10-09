@@ -1,88 +1,55 @@
 #include "app.h"
 
-#include <BLE2902.h>
-#include <BLEAdvertisedDevice.h>
-#include <BLEDevice.h>
-#include <BLEScan.h>
-#include <BLEUtils.h>
+// =============================================================================
+// app.cpp —— 应用层：编排与接线
+//
+// 【本文件的作用】
+// 1) setup_app()：按正确次序初始化各模块，并把模块之间的回调「接线」连好；
+// 2) loop_app() ：每轮主循环依次调用各模块的 tick；
+// 3) 三个麦克风 tap 回调（onMicData / onMicAnalysis / onMicRecord）—— 纯转发胶水。
+//
+// 【分层】应用层是唯一被允许同时认识所有层的地方：
+//   - 它读协议层状态（ble_transport_*）后，作为参数传给底层/业务层；
+//   - 它把业务层需要的发送出口（audio_tx_set_sink）与协议层的回调槽
+//     （ble_transport_set_*_callback）对接起来。
+// 分层全貌与各文件职责见 WorkFlow_Files/Overview.md 的「文件与模块功能」表。
+//
+// 【历史】本文件原为 1218 行的单体，2026-10-09 按分层重构拆出
+//   power_mgmt / battery / ble_transport / audio_tx 四个模块（cmd_router 见后续步骤）。
+// =============================================================================
 
-#include "battery.h"      // 电池采集（底层）：battery_init / battery_read / battery_percentage
+#include "audio_tx.h"      // 蓝牙音频推送（业务层）
+#include "battery.h"       // 电池采集（底层）
+#include "ble_transport.h" // BLE 协议层
 #include "config.h" // Use config.h for all configurations
 #include "mic.h"
-#include "ogg_opus.h"
 #include "opus_encoder.h"
 #include "ota.h"
-#include "power_mgmt.h"   // 按键 / LED / 电源 / 深睡（底层）
+#include "power_mgmt.h" // 按键 / LED / 电源 / 深睡（底层）
 #include "recorder.h"
 #include "speaker_monitor.h"
-#include <FS.h>
-#include <SD.h>
 
 // Device power state
 // 备注：deviceActive 目前只写不读、deviceState 只写不读（既有状态），
 //       按「用户没让改的一律不改」原则原样保留在本文件。
-bool deviceActive = true;                      // 设备是否处于活动状态（无外部引用）
-device_state_t deviceState = DEVICE_BOOTING;   // 设备电源状态（setup_app 里置为 ACTIVE）
+bool deviceActive = true;                    // 设备是否处于活动状态（无外部引用）
+device_state_t deviceState = DEVICE_BOOTING; // 设备电源状态（setup_app 里置为 ACTIVE）
 
 // 电池检查节拍：loop_app() 用它决定多久读一次电量
 unsigned long lastBatteryCheck = 0;
 
-// ---------------------------------------------------------------------------------
-// BLE - Using config.h definitions
-// ---------------------------------------------------------------------------------
-
-// Device Information Service UUIDs
-#define DEVICE_INFORMATION_SERVICE_UUID (uint16_t) 0x180A
-#define MANUFACTURER_NAME_STRING_CHAR_UUID (uint16_t) 0x2A29
-#define MODEL_NUMBER_STRING_CHAR_UUID (uint16_t) 0x2A24
-#define FIRMWARE_REVISION_STRING_CHAR_UUID (uint16_t) 0x2A26
-#define HARDWARE_REVISION_STRING_CHAR_UUID (uint16_t) 0x2A27
-#define SERIAL_NUMBER_STRING_CHAR_UUID (uint16_t) 0x2A25
-
-// Main Friend Service - using config.h UUIDs
-static BLEUUID serviceUUID(OMI_SERVICE_UUID);
-static BLEUUID audioDataUUID(AUDIO_DATA_UUID);
-static BLEUUID audioCodecUUID(AUDIO_CODEC_UUID);
-static BLEUUID voiceprintControlUUID(VOICEPRINT_CONTROL_UUID);
-
-// OTA Service UUIDs
-static BLEUUID otaServiceUUID(OTA_SERVICE_UUID);
-static BLEUUID otaControlUUID(OTA_CONTROL_UUID);
-static BLEUUID otaDataUUID(OTA_DATA_UUID);
-
-// Characteristics
-BLECharacteristic *batteryLevelCharacteristic;
-BLECharacteristic *audioDataCharacteristic;
-BLECharacteristic *audioCodecCharacteristic;
-BLECharacteristic *otaControlCharacteristic;
-BLECharacteristic *otaDataCharacteristic;
-BLECharacteristic *voiceprintControlCharacteristic;
-
 // Audio state
-bool audioEnabled = true;
-volatile bool audioSubscribed = false;
-uint16_t audioPacketIndex = 0;
-
-// State
-bool connected = false;
-
-// Audio ring buffer for encoded packets
-#define AUDIO_TX_BUFFER_SIZE (AUDIO_TX_RING_BUFFER_SIZE * (OPUS_OUTPUT_MAX_BYTES + 2))
-static uint8_t audio_tx_buffer[AUDIO_TX_BUFFER_SIZE];
-static volatile size_t audio_tx_write_pos = 0;
-static volatile size_t audio_tx_read_pos = 0;
-static uint8_t audio_packet_buffer[OPUS_OUTPUT_MAX_BYTES + AUDIO_PACKET_HEADER_SIZE];
+bool audioEnabled = true; // 音频总开关（只读，既有状态）
 
 // Forward declarations
-void updateBatteryService(); // 电量上报（仍在 app.cpp，待步骤2 移交 ble_transport）
-
-// Audio forward declarations
+// 麦克风 tap 回调（纯转发胶水，实现见下方）
 void onMicData(int16_t *data, size_t samples);
 void onMicAnalysis(int16_t *data, size_t samples);
 void onMicRecord(int16_t *data, size_t samples);
-void onOpusEncoded(uint8_t *data, size_t len);
-void processAudioTx();
-void broadcastAudioPacket(uint8_t *data, size_t len);
+
+// 应用层内部的接线用回调
+static void onBleCommand(const uint8_t *payload, size_t len); // 协议层收到手机命令 → 本函数
+static void onBleConnectionChanged(bool isConnected);         // 协议层连接状态变化 → 本函数
 
 // -------------------------------------------------------------------------
 // Audio Functions
@@ -104,208 +71,6 @@ void onMicRecord(int16_t *data, size_t samples)
     // Bypass tap: processed (post gain/highpass) samples for the recorder, i.e.
     // the exact PCM that goes to Opus/BLE. Read-only, memcpy-only inside.
     recorder_feed(data, samples);
-}
-
-// -------------------------------------------------------------------------
-// 0x20 录音回传状态机
-//
-// 把 SD 上的 .opus 逐帧解出来，按现有实时音频包格式推给手机：
-//   [2B 序号][1B 子序号=0][6B BCD 北京时间(YY MM DD HH MM SS)][opus 数据]
-// 同秒内的多帧靠递增的 2 字节序号区分顺序。
-//
-// 按 granule 差值节流（非阻塞），还原原始时间轴——被动录音预缓冲里被删掉
-// 的静音段，回传时表现为对应的等待间隔。回传期间实时音频推送暂停，
-// 避免两路包在同一个特征上混淆。
-// -------------------------------------------------------------------------
-// 默认「暂停」：手机订阅音频通知（写 CCCD）时自动切到 LIVE，
-// 见 AudioCCCDCallback::onWrite()。0x31 可手动暂停，0x30 手动恢复。
-static volatile ble_audio_tx_state_t bleAudioTxState = BLE_AUDIO_TX_PAUSED; // 当前蓝牙推送状态（开机默认暂停）
-static ble_audio_tx_state_t replayPrevState = BLE_AUDIO_TX_PAUSED;          // 进入回放前的状态，回放结束后恢复
-static char replayFiles[REPLAY_MAX_FILES][64];    // 按时间升序的文件名列表
-static int replayFileCount = 0;
-static int replayFileIdx = 0;
-static char replayCurName[64];                    // 当前正在回传的文件名
-static File replayFile;
-static OggOpusReader replayReader;
-static bool replayReaderOpen = false;
-static int64_t replayLastGranule = -1;            // 上一帧 granule（节流基准）
-static uint32_t replayNextSendMs = 0;             // 下一帧允许发送的时刻
-static uint16_t replaySeq = 0;                    // 回传帧序号（同秒内区分顺序）
-static uint32_t replayFrameCount = 0;             // 已回传帧数（日志用）
-
-static void openReplayFileCleanup()
-{
-    if (replayReaderOpen) {
-        ogg_opus_close_read(&replayReader);
-        replayReaderOpen = false;
-    }
-    if (replayFile) {
-        replayFile.close();
-    }
-}
-
-// 打开列表中的下一个文件；全部打开过则返回 false。
-static bool openNextReplayFile()
-{
-    openReplayFileCleanup();
-    while (replayFileIdx < replayFileCount) {
-        char path[72];
-        snprintf(path, sizeof(path), "%s/%s", RECORD_SD_DIR,
-                 replayFiles[replayFileIdx]);
-        replayFile = SD.open(path, FILE_READ);
-        strcpy(replayCurName, replayFiles[replayFileIdx]);
-        replayFileIdx++;
-        if (!replayFile) {
-            Serial.printf("【回传】无法打开 %s，跳过\n", path);
-            continue;
-        }
-        if (!ogg_opus_open_read(&replayReader)) {
-            Serial.printf("【回传】%s 不是有效的 .opus，跳过\n", path);
-            replayFile.close();
-            continue;
-        }
-        replayReaderOpen = true;
-        replayLastGranule = -1;   // 换文件重置节流基准
-        Serial.printf("【回传】正在回传 %s\n", path);
-        return true;
-    }
-    return false;
-}
-
-// 蓝牙推送状态 → 中文名（仅用于串口日志，仿 voiceprintCmdName）。
-// 入参 s：要查询的状态（ble_audio_tx_state_t，定义在 config.h）。
-// 返回：静态字符串，调用方不得释放。
-static const char *bleAudioTxStateName(ble_audio_tx_state_t s)
-{
-    switch (s) {                                          // 按状态枚举分派
-    case BLE_AUDIO_TX_PAUSED: return "暂停";               // 不推送
-    case BLE_AUDIO_TX_LIVE:   return "实时发送";           // 持续推送
-    case BLE_AUDIO_TX_REPLAY: return "回放中";             // 回传抢占
-    default:                  return "未知";               // 兜底
-    }
-}
-
-// 统一的推送状态切换出口：写全局状态（bleAudioTxState，定义在本文件 321 行附近）
-// 并打印一行日志。所有状态变更都应经此函数，避免漏打印/漏改。
-// 入参 s：目标状态（ble_audio_tx_state_t，定义在 config.h）。无返回值。
-static void bleAudioTxSetState(ble_audio_tx_state_t s)
-{
-    if (bleAudioTxState == s) {                           // 状态未变化则不重复打印
-        return;
-    }
-    bleAudioTxState = s;                                  // 更新全局状态
-    Serial.printf("【音频】推送状态 → %s\n", bleAudioTxStateName(s)); // 串口回显
-}
-
-static void startReplay()
-{
-    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 已在回放则忽略重复请求
-        Serial.println("【回传】已在回传中");
-        return;
-    }
-    replayFileCount = recorder_collect_files(replayFiles, REPLAY_MAX_FILES);
-    if (replayFileCount == 0) {
-        Serial.println("【回传】SD 上没有录音");
-        return;
-    }
-    replayFileIdx = 0;
-    replaySeq = 0;
-    replayFrameCount = 0;
-    replayNextSendMs = 0;
-    replayPrevState = bleAudioTxState;                    // 记住回放前的状态，回放结束恢复
-    bleAudioTxSetState(BLE_AUDIO_TX_REPLAY);              // 切入回放态（抢占实时发送）
-    Serial.printf("【回传】开始回传 %d 条录音\n", replayFileCount);
-}
-
-static void stopReplay()
-{
-    if (bleAudioTxState != BLE_AUDIO_TX_REPLAY) {         // 未在回放则无需处理
-        return;
-    }
-    openReplayFileCleanup();                              // 关闭当前回传文件/解复用器
-    bleAudioTxSetState(replayPrevState);                  // 恢复到进入回放前的状态
-    Serial.printf("【回传】已停止（共回传 %lu 帧）\n",
-                  (unsigned long)replayFrameCount);
-}
-
-// 0x30：请求切到「实时发送」。若正在回放，先停回放（实时优先）。
-// 无入参、无返回值；供 voiceprintHandleCommand() 的命令分支调用。
-static void bleAudioTxRequestLive()
-{
-    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 回放中：先收尾回放
-        stopReplay();
-    }
-    bleAudioTxSetState(BLE_AUDIO_TX_LIVE);                // 切到实时发送（幂等）
-}
-
-// 0x31：请求「暂停推送」。若正在回放，先停回放。
-// 无入参、无返回值；供 voiceprintHandleCommand() 的命令分支调用。
-static void bleAudioTxRequestPause()
-{
-    if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {         // 回放中：先收尾回放
-        stopReplay();
-    }
-    bleAudioTxSetState(BLE_AUDIO_TX_PAUSED);              // 切到暂停（幂等）
-}
-
-// 回传一帧（由 loop_app 在回传期间反复调用，非阻塞）。
-static void pumpReplay()
-{
-    // 手机断开或未订阅时暂停推送（数据不丢弃，恢复后继续）。
-    if (!connected || !audioSubscribed || audioDataCharacteristic == nullptr) {
-        return;
-    }
-
-    if (!replayReaderOpen && !openNextReplayFile()) {
-        Serial.printf("【回传】回传完成（共 %lu 帧）\n",
-                      (unsigned long)replayFrameCount);
-        bleAudioTxSetState(replayPrevState);              // 回放自然结束，恢复回放前的状态
-        return;
-    }
-
-    uint8_t opus_buf[OPUS_OUTPUT_MAX_BYTES];
-    size_t len = 0;
-    int64_t granule = 0;
-    if (!ogg_opus_read_packet(&replayReader, replayFile, opus_buf, sizeof(opus_buf),
-                              &len, &granule)) {
-        // 当前文件读完，下一个由下一轮 pump 打开。
-        openReplayFileCleanup();
-        return;
-    }
-
-    // granule 差值节流：granule 单位是 48kHz 刻度，/48 即毫秒。
-    // 非阻塞写法——绝不在 loop 里 delay，避免饿死 mic/Opus。
-    if (replayLastGranule >= 0) {
-        int64_t d = (granule - replayLastGranule) / 48;
-        if (d > REPLAY_MAX_FRAME_DELAY_MS) {
-            d = REPLAY_MAX_FRAME_DELAY_MS;
-        }
-        if (d < REPLAY_MIN_FRAME_DELAY_MS) {
-            d = REPLAY_MIN_FRAME_DELAY_MS;
-        }
-        uint32_t now = millis();
-        if ((int32_t)(now - replayNextSendMs) < 0) {
-            return;   // 还没到发送时刻，帧暂存等待下轮
-        }
-        replayNextSendMs = now + (uint32_t)d;
-    }
-    replayLastGranule = granule;
-
-    // 组包：[2B 序号][1B 子序号][6B BCD 北京时间][opus]
-    uint8_t bcd[6];
-    recorder_frame_time(replayCurName, granule, bcd);
-
-    uint8_t pkt[REPLAY_PACKET_MAX_BYTES];
-    pkt[0] = replaySeq & 0xFF;
-    pkt[1] = (replaySeq >> 8) & 0xFF;
-    pkt[2] = 0;   // 子序号（实时链路留给分片用，回传固定 0）
-    memcpy(pkt + AUDIO_PACKET_HEADER_SIZE, bcd, 6);
-    memcpy(pkt + AUDIO_PACKET_HEADER_SIZE + 6, opus_buf, len);
-
-    audioDataCharacteristic->setValue(pkt, AUDIO_PACKET_HEADER_SIZE + 6 + len);
-    audioDataCharacteristic->notify();
-    replaySeq++;
-    replayFrameCount++;
 }
 
 // -------------------------------------------------------------------------
@@ -358,7 +123,7 @@ static void voiceprintHandleCommand(uint8_t cmd)
                       speaker_monitor_state_name(),
                       speaker_monitor_has_template() ? "有" : "无",
                       speaker_monitor_enroll_segments(),
-                      bleAudioTxStateName(bleAudioTxState));   // 追加当前蓝牙推送状态
+                      audio_tx_state_name());   // 追加当前蓝牙推送状态（已移交 src/audio_tx.cpp）
         break;
     case VP_CMD_REC_START:
         // 主动录音优先级更高：先停掉被动录音，再开始连续录制。
@@ -380,16 +145,16 @@ static void voiceprintHandleCommand(uint8_t cmd)
         recorder_delete_all();
         break;
     case VP_CMD_REPLAY:
-        startReplay();
+        audio_tx_start_replay();                          // 已移交 src/audio_tx.cpp
         break;
     case VP_CMD_REPLAY_STOP:
-        stopReplay();
+        audio_tx_stop_replay();                           // 已移交 src/audio_tx.cpp
         break;
     case VP_CMD_AUDIO_SEND_START:
-        bleAudioTxRequestLive();                          // 0x30：开始/恢复实时推送
+        audio_tx_request_live();                          // 0x30：开始/恢复实时推送（已移交 src/audio_tx.cpp）
         break;
     case VP_CMD_AUDIO_SEND_PAUSE:
-        bleAudioTxRequestPause();                         // 0x31：暂停实时推送
+        audio_tx_request_pause();                         // 0x31：暂停实时推送（已移交 src/audio_tx.cpp）
         break;
     case VP_CMD_SET_TIME:
         // 0x21 的负载（4 字节 unix）由 pollVoiceprintCommands() 解析，
@@ -489,333 +254,57 @@ static void pollVoiceprintCommands()
     }
 }
 
-class VoiceprintControlCallback : public BLECharacteristicCallbacks
+/**
+ * @brief 手机写入命令特征（19B10003）的接收端（应用层接线用）。
+ *
+ * 功能：等价于重构前 VoiceprintControlCallback::onWrite() 里的业务部分
+ *       （原 app.cpp:695-711）—— 把手机写来的字节截断到 5 字节后存进命令邮箱，
+ *       供 pollVoiceprintCommands() 在主循环里消费。
+ *       之所以不在 BLE 回调里直接执行命令：BLE 写入发生在 Bluedroid 任务上，
+ *       不能由它去驱动声纹监控的共享窗口缓冲，必须甩回主循环处理。
+ * 入参：payload = 原始字节；len = 字节数。
+ * 出参：无。
+ * 引用的变量（定义位置）：
+ *   - voiceprintPendingPayload / voiceprintPendingLen / voiceprintPendingCmd → src/app.cpp 上方
+ * 备注：协议层的「取长度、空写入早退」已在 src/ble_transport.cpp 的
+ *       VoiceprintControlCallback 里完成，本函数只负责业务侧落库。
+ */
+static void onBleCommand(const uint8_t *payload, size_t len)
 {
-    void onWrite(BLECharacteristic *pCharacteristic)
-    {
-        size_t len = pCharacteristic->getLength();
-        if (len < 1) {
-            return;
-        }
-        // 先写负载字节，最后写命令字节：poll 一看到 cmd 非零，负载必已就位。
-        std::string val = pCharacteristic->getValue();
-        size_t n = (val.length() > sizeof(voiceprintPendingPayload))
-                       ? sizeof(voiceprintPendingPayload) : val.length();
-        const uint8_t *v = (const uint8_t *)val.data();
-        for (size_t i = 0; i < n; i++) {
-            voiceprintPendingPayload[i] = v[i];
-        }
-        voiceprintPendingLen = n;
-        voiceprintPendingCmd = voiceprintPendingPayload[0];
+    // 先写负载字节，最后写命令字节：poll 一看到 cmd 非零，负载必已就位。
+    size_t n = (len > sizeof(voiceprintPendingPayload))
+                   ? sizeof(voiceprintPendingPayload)
+                   : len;                                    // 截断到邮箱容量（最多 5 字节）
+    for (size_t i = 0; i < n; i++) {                         // 逐字节存入邮箱
+        voiceprintPendingPayload[i] = payload[i];
     }
-};
-
-void onOpusEncoded(uint8_t *data, size_t len)
-{
-    // Store encoded data in TX ring buffer
-    if (len > OPUS_OUTPUT_MAX_BYTES) {
-        return;
-    }
-
-    // Write length (2 bytes) + data
-    size_t packet_size = len + 2;
-    size_t next_write = (audio_tx_write_pos + packet_size) % AUDIO_TX_BUFFER_SIZE;
-
-    // Check for buffer overflow
-    if ((audio_tx_write_pos < audio_tx_read_pos && next_write >= audio_tx_read_pos) ||
-        (audio_tx_write_pos >= audio_tx_read_pos && next_write < audio_tx_write_pos &&
-         next_write >= audio_tx_read_pos)) {
-        // Buffer full, skip this packet
-        return;
-    }
-
-    // Write length
-    audio_tx_buffer[audio_tx_write_pos] = len & 0xFF;
-    audio_tx_buffer[(audio_tx_write_pos + 1) % AUDIO_TX_BUFFER_SIZE] = (len >> 8) & 0xFF;
-
-    // Write data
-    for (size_t i = 0; i < len; i++) {
-        audio_tx_buffer[(audio_tx_write_pos + 2 + i) % AUDIO_TX_BUFFER_SIZE] = data[i];
-    }
-
-    audio_tx_write_pos = next_write;
+    voiceprintPendingLen = n;                                // 记下实际长度
+    voiceprintPendingCmd = voiceprintPendingPayload[0];      // 最后写命令字节（作为「就绪」标志）
 }
 
-void broadcastAudioPacket(uint8_t *data, size_t len)
+/**
+ * @brief BLE 连接状态变化的处理（应用层接线用）。
+ *
+ * 功能：等价于重构前 ServerHandler::onConnect() 里的两件事
+ *       （原 app.cpp:818 与 :821）——
+ *       ① 记录一次用户活动（推迟进入省电模式）；
+ *       ② 立即把当前电量上报给刚连上的手机。
+ *       这两件事分别属于底层（power_mgmt）与协议层（ble_transport），
+ *       由应用层在这里协调，而不是让协议层自己去调 —— 对应 Guideline 的分层要求。
+ * 入参：isConnected = true 已连接 / false 已断开。
+ * 出参：无。
+ * 引用的变量（定义位置）：
+ *   - power_mgmt_note_activity()   → src/power_mgmt.h
+ *   - battery_percentage()         → src/battery.h
+ *   - ble_transport_update_battery() → src/ble_transport.h
+ */
+static void onBleConnectionChanged(bool isConnected)
 {
-    if (!connected || !audioSubscribed || audioDataCharacteristic == nullptr) {
-        return;
+    if (!isConnected) {
+        return; // 断开时重构前不做任何额外动作
     }
-
-    // Build packet: 2 bytes index + 1 byte sub-index + data
-    audio_packet_buffer[0] = audioPacketIndex & 0xFF;
-    audio_packet_buffer[1] = (audioPacketIndex >> 8) & 0xFF;
-    audio_packet_buffer[2] = 0; // Sub-index (for fragmentation if needed)
-
-    memcpy(audio_packet_buffer + AUDIO_PACKET_HEADER_SIZE, data, len);
-
-    audioDataCharacteristic->setValue(audio_packet_buffer, len + AUDIO_PACKET_HEADER_SIZE);
-    audioDataCharacteristic->notify();
-    audioPacketIndex++;
-}
-
-void processAudioTx()
-{
-    if (!connected || !audioSubscribed) {
-        return;
-    }
-
-    if (audioDataCharacteristic == nullptr) {
-        return;
-    }
-
-    // 只有「实时发送」态才真正推给手机；暂停/回放态只排空缓冲、不发送。
-    // 这样暂停期不会积压陈旧音频，恢复后从当下开始，无突发补发。
-    const bool send = (bleAudioTxState == BLE_AUDIO_TX_LIVE);   // 本轮是否真正推送
-
-    // Check if we have data in the ring buffer
-    while (audio_tx_read_pos != audio_tx_write_pos) {
-        // Read length
-        uint16_t len =
-            audio_tx_buffer[audio_tx_read_pos] | (audio_tx_buffer[(audio_tx_read_pos + 1) % AUDIO_TX_BUFFER_SIZE] << 8);
-
-        if (len == 0 || len > OPUS_OUTPUT_MAX_BYTES) {
-            // Invalid packet, skip
-            audio_tx_read_pos = (audio_tx_read_pos + 2) % AUDIO_TX_BUFFER_SIZE;
-            continue;
-        }
-
-        // Update read position（无论推不推送都推进读指针 → 暂停期的帧被丢弃）
-        size_t saved_read = audio_tx_read_pos;                  // 暂存本帧起始，供拷贝用
-        audio_tx_read_pos = (audio_tx_read_pos + 2 + len) % AUDIO_TX_BUFFER_SIZE;
-
-        if (send) {
-            // Read data
-            static uint8_t temp_data[OPUS_OUTPUT_MAX_BYTES];    // 单帧临时缓冲（静态，避免占栈）
-            for (size_t i = 0; i < len; i++) {                  // 逐个字节拷出（环形，需取模）
-                temp_data[i] = audio_tx_buffer[(saved_read + 2 + i) % AUDIO_TX_BUFFER_SIZE];
-            }
-
-            // Send packet
-            broadcastAudioPacket(temp_data, len);               // 真正 notify 给手机
-
-            // Small delay to prevent BLE congestion
-            delay(1);                                           // 仅在推送时限速，防 BLE 拥塞
-        }
-    }
-}
-
-// -------------------------------------------------------------------------
-// BLE Callbacks
-// -------------------------------------------------------------------------
-class ServerHandler : public BLEServerCallbacks
-{
-    void onConnect(BLEServer *server) override
-    {
-        connected = true;
-        audioSubscribed = false;
-        power_mgmt_note_activity(); // ≡ 原 `lastActivity = millis()`，实现已搬到 src/power_mgmt.cpp
-        Serial.println(">>> BLE Client connected.");
-        // Send current battery level on connect
-        updateBatteryService();
-    }
-    void onMtuChanged(BLEServer *server, esp_ble_gatts_cb_param_t *param) override
-    {
-        Serial.printf(">>> MTU negotiated: %d\n", param->mtu.mtu);
-    }
-    void onDisconnect(BLEServer *server) override
-    {
-        connected = false;
-        audioSubscribed = false;
-        Serial.println("<<< BLE Client disconnected. Restarting advertising.");
-        BLEDevice::startAdvertising();
-    }
-};
-
-// Callback for Audio Data CCCD (Client Characteristic Configuration Descriptor)
-class AudioCCCDCallback : public BLEDescriptorCallbacks
-{
-    void onWrite(BLEDescriptor *pDescriptor)
-    {
-        uint8_t *value = pDescriptor->getValue();
-        if (value && pDescriptor->getLength() >= 2) {
-            // Check notification bit (bit 0)
-            if (value[0] & 0x01) {
-                audioSubscribed = true;
-                Serial.println("Audio notifications enabled");
-                // 订阅即开始：手机开启音频通知 = 明确「要音频」，自动切到实时发送。
-                // 若正在回放（REPLAY）则不打断，由回放结束后的状态恢复逻辑接管。
-                if (bleAudioTxState == BLE_AUDIO_TX_PAUSED) {   // 仅从暂停态自动开始
-                    bleAudioTxSetState(BLE_AUDIO_TX_LIVE);      // 切到实时发送
-                }
-            } else {
-                audioSubscribed = false;
-                Serial.println("Audio notifications disabled");
-            }
-        }
-    }
-};
-
-class AudioDataCallback : public BLECharacteristicCallbacks
-{
-    void onStatus(BLECharacteristic *pCharacteristic, Status s, uint32_t code)
-    {
-        if (s == Status::SUCCESS_NOTIFY || s == Status::SUCCESS_INDICATE) {
-            // Notification sent successfully
-        }
-    }
-
-    void onRead(BLECharacteristic *pCharacteristic)
-    {
-        // Client read the characteristic
-    }
-};
-
-class OTAControlCallback : public BLECharacteristicCallbacks
-{
-    void onWrite(BLECharacteristic *pChar) override
-    {
-        std::string value = pChar->getValue();
-        if (value.length() > 0) {
-            ota_handle_command((uint8_t *) value.data(), value.length());
-        }
-    }
-
-    void onRead(BLECharacteristic *pChar) override
-    {
-        uint8_t status[2] = {ota_get_status(), 0};
-        pChar->setValue(status, 2);
-    }
-};
-
-// -------------------------------------------------------------------------
-// Battery Functions
-// -------------------------------------------------------------------------
-// 备注：原 readBatteryLevel() 已按分层搬到 src/battery.cpp（对外名 battery_read()）。
-//       本文件不再自己采 ADC，只通过 battery_percentage() 取值后上报。
-
-void updateBatteryService()
-{
-    if (batteryLevelCharacteristic) {
-        uint8_t batteryLevel = (uint8_t) battery_percentage(); // 从 battery 模块取当前百分比
-        batteryLevelCharacteristic->setValue(&batteryLevel, 1);
-
-        if (connected) {
-            batteryLevelCharacteristic->notify();
-        }
-    }
-}
-
-// -------------------------------------------------------------------------
-// configure_ble()
-// -------------------------------------------------------------------------
-void configure_ble()
-{
-    Serial.println("Initializing BLE...");
-    BLEDevice::init(BLE_DEVICE_NAME);
-    BLEDevice::setMTU(BLE_MTU_SIZE); // Set local MTU (BLE_MTU_SIZE from config.h)
-    Serial.printf("Local MTU set to %d\n", BLEDevice::getMTU());
-    BLEServer *server = BLEDevice::createServer();
-    server->setCallbacks(new ServerHandler());
-
-    // Main service
-    BLEService *service = server->createService(serviceUUID);
-
-    // Audio Data characteristic (for streaming audio to app)
-    audioDataCharacteristic = service->createCharacteristic(
-        audioDataUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    BLE2902 *audioCcc = new BLE2902();
-    audioCcc->setNotifications(true);
-    audioCcc->setCallbacks(new AudioCCCDCallback());
-    audioDataCharacteristic->addDescriptor(audioCcc);
-    audioDataCharacteristic->setCallbacks(new AudioDataCallback());
-
-    // Audio Codec characteristic (tells app which codec we're using)
-    audioCodecCharacteristic = service->createCharacteristic(audioCodecUUID, BLECharacteristic::PROPERTY_READ);
-    uint8_t codecId = opus_get_codec_id();
-    audioCodecCharacteristic->setValue(&codecId, 1);
-
-    // Voiceprint control characteristic: 1-byte commands (enroll/abort/finish/erase/status)
-    // 同时支持「有响应写」与「无响应写」：不少客户端/调试工具默认用 Write Without Response，
-    // 若只声明 PROPERTY_WRITE，该写入会在 GATT 层被直接拒收，onWrite() 不会被调用，
-    // 表现为「发了命令没反应、也不报错」。
-    voiceprintControlCharacteristic = service->createCharacteristic(
-        voiceprintControlUUID, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-    voiceprintControlCharacteristic->setCallbacks(new VoiceprintControlCallback());
-
-    // Battery Service
-    BLEService *batteryService = server->createService(BATTERY_SERVICE_UUID);
-    batteryLevelCharacteristic = batteryService->createCharacteristic(
-        BATTERY_LEVEL_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    BLE2902 *batteryCcc = new BLE2902();
-    batteryCcc->setNotifications(true);
-    batteryLevelCharacteristic->addDescriptor(batteryCcc);
-
-    // Set initial battery level
-    // ⚠️ 注意次序：这里读电量时，ADC 的显式配置（battery_init()）还没执行 ——
-    //    原重构前的代码就是这个次序（configure_ble() 内部先读，之后才 analogReadResolution），
-    //    属纯搬迁，保持逐位一致。
-    battery_read();
-    uint8_t initialBatteryLevel = (uint8_t) battery_percentage();
-    batteryLevelCharacteristic->setValue(&initialBatteryLevel, 1);
-
-    // Device Information Service
-    BLEService *deviceInfoService = server->createService(DEVICE_INFORMATION_SERVICE_UUID);
-    BLECharacteristic *manufacturerNameCharacteristic =
-        deviceInfoService->createCharacteristic(MANUFACTURER_NAME_STRING_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
-    BLECharacteristic *modelNumberCharacteristic =
-        deviceInfoService->createCharacteristic(MODEL_NUMBER_STRING_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
-    BLECharacteristic *firmwareRevisionCharacteristic =
-        deviceInfoService->createCharacteristic(FIRMWARE_REVISION_STRING_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
-    BLECharacteristic *hardwareRevisionCharacteristic =
-        deviceInfoService->createCharacteristic(HARDWARE_REVISION_STRING_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
-    BLECharacteristic *serialNumberCharacteristic =
-        deviceInfoService->createCharacteristic(SERIAL_NUMBER_STRING_CHAR_UUID, BLECharacteristic::PROPERTY_READ);
-
-    manufacturerNameCharacteristic->setValue(MANUFACTURER_NAME);
-    modelNumberCharacteristic->setValue(BLE_DEVICE_NAME);
-    firmwareRevisionCharacteristic->setValue(FIRMWARE_VERSION_STRING);
-    hardwareRevisionCharacteristic->setValue(HARDWARE_REVISION);
-
-    // Generate serial number from ESP32 chip ID
-    uint64_t chipId = ESP.getEfuseMac();
-    char serialNumber[17];
-    snprintf(serialNumber, sizeof(serialNumber), "%04X%08X", (uint16_t) (chipId >> 32), (uint32_t) chipId);
-    serialNumberCharacteristic->setValue(serialNumber);
-
-    // OTA Service
-    BLEService *otaService = server->createService(otaServiceUUID);
-
-    // OTA Control characteristic (for receiving commands and reading status)
-    otaControlCharacteristic = otaService->createCharacteristic(
-        otaControlUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-    otaControlCharacteristic->setCallbacks(new OTAControlCallback());
-
-    // OTA Data characteristic (for progress notifications)
-    otaDataCharacteristic = otaService->createCharacteristic(
-        otaDataUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    BLE2902 *otaCcc = new BLE2902();
-    otaCcc->setNotifications(true);
-    otaDataCharacteristic->addDescriptor(otaCcc);
-
-    // Set OTA characteristics for the OTA module
-    ota_set_characteristics(otaControlCharacteristic, otaDataCharacteristic);
-
-    // Start services
-    service->start();
-    batteryService->start();
-    deviceInfoService->start();
-    otaService->start();
-
-    // Start advertising
-    BLEAdvertising *advertising = BLEDevice::getAdvertising();
-    advertising->addServiceUUID(service->getUUID()); // Main service (fits in 31 bytes)
-    advertising->setScanResponse(true);
-    advertising->setMinPreferred(BLE_ADV_MIN_INTERVAL);
-    advertising->setMaxPreferred(BLE_ADV_MAX_INTERVAL);
-    BLEDevice::startAdvertising();
-
-    Serial.println("BLE initialized and advertising started.");
+    power_mgmt_note_activity();                                   // ≡ 原 :818  lastActivity = millis()
+    ble_transport_update_battery((uint8_t) battery_percentage()); // ≡ 原 :821  updateBatteryService()
 }
 
 // -------------------------------------------------------------------------
@@ -831,7 +320,18 @@ void setup_app()
     // （逐行等价于原 app.cpp:1088-1102，实现已搬到 src/power_mgmt.cpp）
     power_mgmt_init();
 
-    configure_ble();
+    // ---- 应用层接线：把模块之间的回调连起来（这是应用层独有的职责）----
+    ble_transport_set_rx_callback(onBleCommand);                 // 协议层收到手机命令 → 本文件
+    ble_transport_set_conn_callback(onBleConnectionChanged);     // 协议层连接状态变化 → 本文件
+    ble_transport_set_subscribe_callback(audio_tx_on_subscribe); // 协议层音频订阅变化 → 业务层
+    audio_tx_set_sink(ble_transport_send_audio_frame);           // 业务层要发帧 → 协议层（经应用层转接）
+
+    // ---- BLE 初始化 ----
+    // 电量初值与 codec 标识由应用层读出后作为参数传入：协议层不得反向依赖底层/业务模块。
+    // ⚠️ 保持原有次序：这里读电量时 battery_init()（ADC 配置）还没执行 ——
+    //    重构前 configure_ble() 内部就是这个次序，属纯搬迁，逐位一致。
+    battery_read();
+    ble_transport_init((uint8_t) battery_percentage(), opus_get_codec_id());
 
     // Initial battery reading
     // Battery voltage divider
@@ -843,12 +343,10 @@ void setup_app()
     // Initialize audio subsystem
     Serial.println("Initializing audio subsystem...");
 
-    // 开机初始推送状态：默认「暂停」，手机订阅音频通知后自动开始推送。
-    Serial.printf("【音频】推送状态 → %s（手机订阅音频特征后自动开始；0x31 暂停，0x30 恢复）\n",
-                  bleAudioTxStateName(bleAudioTxState));
+    audio_tx_init(); // 打印开机初始推送状态（≡ 原 :1117-1119）
 
     if (opus_encoder_init()) {
-        opus_set_callback(onOpusEncoded);
+        opus_set_callback(audio_tx_on_opus); // 编码结果 → 业务层 audio_tx（原为 onOpusEncoded）
 
         if (mic_start()) {
             mic_set_callback(onMicData);
@@ -887,8 +385,8 @@ void loop_app()
 
     // Handle button presses + Update LED
     // （≡ 原 loop_app() 里先后调用的 handleButton() 与 updateLED()，已搬到 src/power_mgmt.cpp。
-    //   connected / recorder_sd_ok() 由应用层读出后作为参数传入 —— 底层不得反向查询。）
-    power_mgmt_poll(connected, recorder_sd_ok());
+    //   连接状态由应用层实时读出后作为参数传入 —— 底层不得反向查询协议层。）
+    power_mgmt_poll(ble_transport_is_connected(), recorder_sd_ok());
 
     // Process OTA updates
     ota_loop();
@@ -904,39 +402,36 @@ void loop_app()
 
     // Send audio packets over BLE. During replay the live stream pauses so
     // the replayed frames (with timestamps) don't interleave with live ones.
-    // 三态状态机：回放走 pumpReplay；实时/暂停都走 processAudioTx（由状态决定是否真发）。
-    if (connected && audioSubscribed) {
-        if (bleAudioTxState == BLE_AUDIO_TX_REPLAY) {       // 回放态：推回传帧
-            pumpReplay();
-        } else {
-            processAudioTx();                               // 实时态=发送，暂停态=只排空缓冲
-        }
-    }
+    // 三态状态机与「本轮是否可发」的判断已移入 src/audio_tx.cpp 的 audio_tx_tick()；
+    // 连接/订阅状态由应用层读出后作为参数传入（业务层不得反向查询协议层）。
+    audio_tx_tick(ble_transport_is_connected() && ble_transport_audio_subscribed());
 
     // Check for power save mode (gentle optimization)
     // ⚠️ 传入的是循环顶部那个「陈旧的 now」，不是重新取时间：
     //    原代码正是用它去算 now - lastActivity 的（短按后 lastActivity 会大于 now
     //    → unsigned long 下溢 → 立即省电）。这是既存缺陷，纯搬迁必须逐位复现。
     //    详见 src/power_mgmt.cpp 中 power_mgmt_idle_check() 的注释。
-    power_mgmt_idle_check(now, connected);
+    power_mgmt_idle_check(now, ble_transport_is_connected());
 
     // Check battery level periodically
     if (now - lastBatteryCheck >= BATTERY_TASK_INTERVAL_MS) {
-        battery_read();           // ≡ 原 readBatteryLevel()（已搬到 src/battery.cpp）
-        updateBatteryService();
+        battery_read(); // ≡ 原 readBatteryLevel()（已搬到 src/battery.cpp）
+        // ≡ 原 updateBatteryService()（已搬到 src/ble_transport.cpp）；
+        //   电量由应用层取出后传入，协议层不反向依赖底层。
+        ble_transport_update_battery((uint8_t) battery_percentage());
         lastBatteryCheck = now;
     }
 
     // Force battery update on first connection
     static bool firstBatteryUpdate = true;
-    if (connected && firstBatteryUpdate) {
-        battery_read();           // ≡ 原 readBatteryLevel()
-        updateBatteryService();
+    if (ble_transport_is_connected() && firstBatteryUpdate) {
+        battery_read(); // ≡ 原 readBatteryLevel()
+        ble_transport_update_battery((uint8_t) battery_percentage());
         firstBatteryUpdate = false;
     }
 
     // Adaptive delays for power saving (gentle optimization)
-    if (audioSubscribed) {
+    if (ble_transport_audio_subscribed()) {
         delay(5); // Fast during audio streaming
     } else {
         delay(50); // Reduced delay
