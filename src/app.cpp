@@ -6,21 +6,24 @@
 // 【本文件的作用】
 // 1) setup_app()：按正确次序初始化各模块，并把模块之间的回调「接线」连好；
 // 2) loop_app() ：每轮主循环依次调用各模块的 tick；
-// 3) 三个麦克风 tap 回调（onMicData / onMicAnalysis / onMicRecord）—— 纯转发胶水。
+// 3) 三个麦克风 tap 回调（onMicData / onMicAnalysis / onMicRecord）—— 纯转发胶水；
+// 4) onBleConnectionChanged()：BLE 连接事件里「记一次活动 + 上报电量」的协调。
 //
 // 【分层】应用层是唯一被允许同时认识所有层的地方：
 //   - 它读协议层状态（ble_transport_*）后，作为参数传给底层/业务层；
 //   - 它把业务层需要的发送出口（audio_tx_set_sink）与协议层的回调槽
-//     （ble_transport_set_*_callback）对接起来。
+//     （ble_transport_set_*_callback）对接起来；
+//   - 它把手机命令的落点（cmd_router_dispatch）注册给协议层。
 // 分层全貌与各文件职责见 WorkFlow_Files/Overview.md 的「文件与模块功能」表。
 //
 // 【历史】本文件原为 1218 行的单体，2026-10-09 按分层重构拆出
-//   power_mgmt / battery / ble_transport / audio_tx 四个模块（cmd_router 见后续步骤）。
+//   power_mgmt / battery / ble_transport / audio_tx / cmd_router 五个模块。
 // =============================================================================
 
 #include "audio_tx.h"      // 蓝牙音频推送（业务层）
 #include "battery.h"       // 电池采集（底层）
 #include "ble_transport.h" // BLE 协议层
+#include "cmd_router.h"    // 命令路由（挂在应用层下）
 #include "config.h" // Use config.h for all configurations
 #include "mic.h"
 #include "opus_encoder.h"
@@ -48,7 +51,6 @@ void onMicAnalysis(int16_t *data, size_t samples);
 void onMicRecord(int16_t *data, size_t samples);
 
 // 应用层内部的接线用回调
-static void onBleCommand(const uint8_t *payload, size_t len); // 协议层收到手机命令 → 本函数
 static void onBleConnectionChanged(bool isConnected);         // 协议层连接状态变化 → 本函数
 
 // -------------------------------------------------------------------------
@@ -71,215 +73,6 @@ void onMicRecord(int16_t *data, size_t samples)
     // Bypass tap: processed (post gain/highpass) samples for the recorder, i.e.
     // the exact PCM that goes to Opus/BLE. Read-only, memcpy-only inside.
     recorder_feed(data, samples);
-}
-
-// -------------------------------------------------------------------------
-// Voiceprint enrollment control (shared by the serial and BLE triggers)
-// -------------------------------------------------------------------------
-static const char *voiceprintCmdName(uint8_t cmd)
-{
-    switch (cmd) {
-    case VP_CMD_ENROLL: return "开始录入";
-    case VP_CMD_FINISH: return "结束录入";
-    case VP_CMD_ABORT:  return "放弃录入";
-    case VP_CMD_ERASE:  return "删除模板";
-    case VP_CMD_STATUS: return "查询状态";
-    case VP_CMD_REC_START: return "开始主动录音";
-    case VP_CMD_REC_STOP:  return "停止主动录音";
-    case VP_CMD_DEL_LAST:  return "删除最近录音";
-    case VP_CMD_DEL_ALL:   return "删除全部录音";
-    case VP_CMD_REPLAY:    return "开始回传";
-    case VP_CMD_SET_TIME:  return "对时";
-    case VP_CMD_REPLAY_STOP: return "停止回传";
-    case VP_CMD_AUDIO_SEND_START: return "开始推送音频";   // 0x30
-    case VP_CMD_AUDIO_SEND_PAUSE: return "暂停推送音频";   // 0x31
-    default:            return "未知";
-    }
-}
-
-static void voiceprintHandleCommand(uint8_t cmd)
-{
-    switch (cmd) {
-    case VP_CMD_ENROLL:
-        if (!speaker_monitor_enroll_start()) {
-            Serial.println("【命令】无法开始录入（正在录入，或声纹模块未启用）");
-        }
-        break;
-    case VP_CMD_ABORT:
-        speaker_monitor_enroll_abort();
-        Serial.println("【命令】已放弃录入");
-        break;
-    case VP_CMD_FINISH:
-        // 结果行由 voiceprint_enroll_finish() 自己打印。
-        if (!speaker_monitor_enroll_finish_now()) {
-            Serial.println("【命令】当前不在录入，无需结束");
-        }
-        break;
-    case VP_CMD_ERASE:
-        speaker_monitor_erase_template();
-        break;
-    case VP_CMD_STATUS:
-        Serial.printf("【命令】状态=%s 模板=%s 已录取段数=%d 音频推送=%s\n",
-                      speaker_monitor_state_name(),
-                      speaker_monitor_has_template() ? "有" : "无",
-                      speaker_monitor_enroll_segments(),
-                      audio_tx_state_name());   // 追加当前蓝牙推送状态（已移交 src/audio_tx.cpp）
-        break;
-    case VP_CMD_REC_START:
-        // 主动录音优先级更高：先停掉被动录音，再开始连续录制。
-        speaker_monitor_force_idle();
-        if (!recorder_active_start()) {
-            Serial.println("【命令】主动录音启动失败（无SD卡？）");
-        }
-        break;
-    case VP_CMD_REC_STOP:
-        recorder_active_stop();
-        break;
-    case VP_CMD_DEL_LAST:
-        // 先保证状态机回待机（被动录音落盘），再删文件。
-        speaker_monitor_force_idle();
-        recorder_delete_last_active();
-        break;
-    case VP_CMD_DEL_ALL:
-        speaker_monitor_force_idle();
-        recorder_delete_all();
-        break;
-    case VP_CMD_REPLAY:
-        audio_tx_start_replay();                          // 已移交 src/audio_tx.cpp
-        break;
-    case VP_CMD_REPLAY_STOP:
-        audio_tx_stop_replay();                           // 已移交 src/audio_tx.cpp
-        break;
-    case VP_CMD_AUDIO_SEND_START:
-        audio_tx_request_live();                          // 0x30：开始/恢复实时推送（已移交 src/audio_tx.cpp）
-        break;
-    case VP_CMD_AUDIO_SEND_PAUSE:
-        audio_tx_request_pause();                         // 0x31：暂停实时推送（已移交 src/audio_tx.cpp）
-        break;
-    case VP_CMD_SET_TIME:
-        // 0x21 的负载（4 字节 unix）由 pollVoiceprintCommands() 解析，
-        // 不会走到这里。
-        Serial.println("【命令】对时命令缺少时间负载");
-        break;
-    default:
-        Serial.printf("【命令】未知命令 0x%02X\n", cmd);
-        break;
-    }
-}
-
-// BLE writes arrive on the Bluedroid task, which must not drive the monitor's
-// shared window buffer. Queue the command and let the main loop run it.
-// 0x21（对时）需要带 4 字节 unix 负载，所以把整个 value（≤5 字节）一起存下来。
-static volatile uint8_t voiceprintPendingPayload[5];
-static volatile size_t voiceprintPendingLen = 0;
-static volatile uint8_t voiceprintPendingCmd = 0;
-
-// 串口触发：一行一条命令 - enroll / abort / finish / erase / status /
-// recstart / recstop。
-static void pollVoiceprintCommands()
-{
-    static char line[32];
-    static size_t len = 0;
-
-    while (Serial.available() > 0) {
-        char c = (char)Serial.read();
-        if (c == '\r' || c == '\n') {
-            if (len == 0) {
-                continue;
-            }
-            line[len] = '\0';
-            len = 0;
-
-            if (!strcasecmp(line, "enroll")) {
-                voiceprintHandleCommand(VP_CMD_ENROLL);
-            } else if (!strcasecmp(line, "abort")) {
-                voiceprintHandleCommand(VP_CMD_ABORT);
-            } else if (!strcasecmp(line, "finish")) {
-                voiceprintHandleCommand(VP_CMD_FINISH);
-            } else if (!strcasecmp(line, "erase")) {
-                voiceprintHandleCommand(VP_CMD_ERASE);
-            } else if (!strcasecmp(line, "status")) {
-                voiceprintHandleCommand(VP_CMD_STATUS);
-            } else if (!strcasecmp(line, "recstart")) {
-                voiceprintHandleCommand(VP_CMD_REC_START);
-            } else if (!strcasecmp(line, "recstop")) {
-                voiceprintHandleCommand(VP_CMD_REC_STOP);
-            } else if (!strcasecmp(line, "dellast")) {
-                voiceprintHandleCommand(VP_CMD_DEL_LAST);
-            } else if (!strcasecmp(line, "delall")) {
-                voiceprintHandleCommand(VP_CMD_DEL_ALL);
-            } else if (!strcasecmp(line, "replay")) {
-                voiceprintHandleCommand(VP_CMD_REPLAY);
-            } else if (!strcasecmp(line, "replaystop")) {
-                voiceprintHandleCommand(VP_CMD_REPLAY_STOP);
-            } else if (!strcasecmp(line, "sendstart")) {
-                voiceprintHandleCommand(VP_CMD_AUDIO_SEND_START);   // 串口别名：开始推送
-            } else if (!strcasecmp(line, "sendstop")) {
-                voiceprintHandleCommand(VP_CMD_AUDIO_SEND_PAUSE);   // 串口别名：暂停推送
-            } else if (!strcasecmp(line, "sdcheck")) {
-                recorder_sd_check();
-            } else if (!strcasecmp(line, "sdprobe")) {
-                recorder_sd_probe();
-            } else if (!strcasecmp(line, "sdpins")) {
-                recorder_sd_pins();
-            } else if (!strcasecmp(line, "sdmmc")) {
-                recorder_sd_mmc();
-            } else if (!strncasecmp(line, "settime", 7)) {
-                // 串口对时：settime <unix 秒>
-                uint32_t unix = (uint32_t)atol(line + 7);
-                recorder_sync_time(unix);
-            } else {
-                Serial.printf("【命令】无法识别的命令 '%s'\n", line);
-            }
-        } else if (len < sizeof(line) - 1) {
-            line[len++] = c;
-        }
-    }
-
-    uint8_t pending = voiceprintPendingCmd;
-    if (pending != 0) {
-        voiceprintPendingCmd = 0;
-        Serial.printf("【命令】手机写入 0x%02X（%s）\n", pending,
-                      voiceprintCmdName(pending));
-        if (pending == VP_CMD_SET_TIME && voiceprintPendingLen >= 5) {
-            // 0x21 负载 = 4 字节小端 unix 时间戳（秒）。
-            uint32_t unix = (uint32_t)voiceprintPendingPayload[1]
-                          | ((uint32_t)voiceprintPendingPayload[2] << 8)
-                          | ((uint32_t)voiceprintPendingPayload[3] << 16)
-                          | ((uint32_t)voiceprintPendingPayload[4] << 24);
-            recorder_sync_time(unix);
-        } else {
-            voiceprintHandleCommand(pending);
-        }
-    }
-}
-
-/**
- * @brief 手机写入命令特征（19B10003）的接收端（应用层接线用）。
- *
- * 功能：等价于重构前 VoiceprintControlCallback::onWrite() 里的业务部分
- *       （原 app.cpp:695-711）—— 把手机写来的字节截断到 5 字节后存进命令邮箱，
- *       供 pollVoiceprintCommands() 在主循环里消费。
- *       之所以不在 BLE 回调里直接执行命令：BLE 写入发生在 Bluedroid 任务上，
- *       不能由它去驱动声纹监控的共享窗口缓冲，必须甩回主循环处理。
- * 入参：payload = 原始字节；len = 字节数。
- * 出参：无。
- * 引用的变量（定义位置）：
- *   - voiceprintPendingPayload / voiceprintPendingLen / voiceprintPendingCmd → src/app.cpp 上方
- * 备注：协议层的「取长度、空写入早退」已在 src/ble_transport.cpp 的
- *       VoiceprintControlCallback 里完成，本函数只负责业务侧落库。
- */
-static void onBleCommand(const uint8_t *payload, size_t len)
-{
-    // 先写负载字节，最后写命令字节：poll 一看到 cmd 非零，负载必已就位。
-    size_t n = (len > sizeof(voiceprintPendingPayload))
-                   ? sizeof(voiceprintPendingPayload)
-                   : len;                                    // 截断到邮箱容量（最多 5 字节）
-    for (size_t i = 0; i < n; i++) {                         // 逐字节存入邮箱
-        voiceprintPendingPayload[i] = payload[i];
-    }
-    voiceprintPendingLen = n;                                // 记下实际长度
-    voiceprintPendingCmd = voiceprintPendingPayload[0];      // 最后写命令字节（作为「就绪」标志）
 }
 
 /**
@@ -321,7 +114,7 @@ void setup_app()
     power_mgmt_init();
 
     // ---- 应用层接线：把模块之间的回调连起来（这是应用层独有的职责）----
-    ble_transport_set_rx_callback(onBleCommand);                 // 协议层收到手机命令 → 本文件
+    ble_transport_set_rx_callback(cmd_router_dispatch);          // 协议层收到手机命令 → 命令路由
     ble_transport_set_conn_callback(onBleConnectionChanged);     // 协议层连接状态变化 → 本文件
     ble_transport_set_subscribe_callback(audio_tx_on_subscribe); // 协议层音频订阅变化 → 业务层
     audio_tx_set_sink(ble_transport_send_audio_frame);           // 业务层要发帧 → 协议层（经应用层转接）
@@ -392,7 +185,9 @@ void loop_app()
     ota_loop();
 
     // Voiceprint enrollment commands from the serial console or BLE
-    pollVoiceprintCommands();
+    // （串口命令行 + 手机写入命令两条来路，统一由 src/cmd_router.cpp 分发；
+    //   原 pollVoiceprintCommands()，已搬到 src/cmd_router.cpp → cmd_router_tick()）
+    cmd_router_tick();
 
     // Process microphone data - always run to keep audio realtime
     if (audioEnabled && mic_is_running()) {
