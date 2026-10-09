@@ -186,4 +186,95 @@
 2. `src/ota.cpp:269` 的 `setInsecure()` 跳过 HTTPS 证书校验，是 OTA 链路最大的安全口子（旧问题，本次仅记录）。
 3. OTA 控制特征 `19B10011` 同样只有 `PROPERTY_WRITE`，缺 `PROPERTY_WRITE_NR`（与 `19B10003` 同款问题）。
 
+---
+
+## 2026-10-09 10:31 — `app.cpp` 分层重构（方案 B）：单体 1218 行 → 5 模块 + 编排层
+
+### 需求来源
+用户在对话中提出：`src/app.cpp` 过大，希望按**协议层 / 业务层 / 底层**拆分为多个模块，
+以利于后期管理、整合、解耦与维护，并要求同步更新 `Overview.md`（含**逐文件功能表**）。
+经用户从 3 个备选方案中选定 **方案 B（分层拆分）**，并确认：分 3 次提交、跨文件接口加模块前缀。
+（`WorkFlow_Files/Request.md` 当时为**空文件**，需求来自对话，已补记进该文件。）
+
+### 做了什么 —— 三次提交，纯搬迁，算法一行未改
+
+| 提交 | 内容 | Flash 变化 | app.cpp |
+|---|---|---|---|
+| `f362931` | 拆出 `power_mgmt`（按键/LED/电源/深睡）+ `battery`（电量 ADC） | 1 765 881 → 1 766 089 B (**+208 B**) | 1218 → 1000 行 |
+| `24539cb` | 拆出 `ble_transport`（协议层）+ `audio_tx`（业务层） | → 1 766 497 B (**+408 B**) | → 439 行 |
+| `cf6b640` | 拆出 `cmd_router`（命令路由）；`app.cpp` 收尾 | → 1 766 549 B (**+52 B**) | → **234 行** |
+
+**新增文件（均含文件头作用说明 + 逐函数"功能/入参/出参/引用变量定义位置"注释 + 逐行中文备注）**：
+
+| 新文件 | 层 | 搬入的原 `app.cpp` 行号 |
+|---|---|---|
+| `src/power_mgmt.{h,cpp}` | 底层 | :103-287（按键 ISR / LED / 电源状态机 / 深睡） |
+| `src/battery.{h,cpp}` | 底层 | :895-955（电量 ADC）；:1108-1109（ADC 配置） |
+| `src/ble_transport.{h,cpp}` | 协议层 | :42-84、:693-712、:809-890、:957-967、:972-1076（GATT / UUID / 特征 / 5 个回调类） |
+| `src/audio_tx.{h,cpp}` | 业务层 | :78-81、:323-511、:714-743、:763-807（推送三态 + 0x20 回传 + 发送环形缓冲） |
+| `src/cmd_router.{h,cpp}` | 路由层 | :79-255、:272-283（命令分派表 / BLE 命令邮箱 / 串口行解析） |
+
+**解耦的核心改动**：协议层回调类里**不再出现任何业务函数名**，一律调用由 `app.cpp` 注册进来的回调槽
+（`s_rxFn` / `s_connFn` / `s_subFn`）；业务层 `audio_tx` **不 include 协议层**，
+发送改走应用层注册的 `s_sink` 函数指针；"BLE 是否可发""SD 是否挂载"等状态
+一律由 `app.cpp` 读出后**作为参数传入**底层/业务层。
+
+**已用 `grep` 复核的解耦证据**（命中项全部落在注释里，无一处真实调用）：
+- `ble_transport.cpp` 不含 `voiceprint*` / `speaker_monitor*` / `audio_tx_*` / `recorder_*` / `battery_percentage` / `opus_get_codec_id`
+- `audio_tx.cpp` 不含 `ble_transport_*` / `BLECharacteristic` / `broadcastAudioPacket`
+- `power_mgmt.cpp` 不含 `recorder_sd_ok()` / `ble_transport_*`
+- `cmd_router.cpp` 不含 `ble_transport_*` / `BLECharacteristic`
+
+### 与原计划（方案 B）的**有意偏离**（3 处，均已在本文件说明理由）
+
+1. **`audio_tx` 与 `ble_transport` 合并为同一次提交**（原计划分属步骤 2、3）。
+   理由：`broadcastAudioPacket()` 从 `app.cpp` 搬到协议层、同时 `audio_tx` 改为走 sink 指针，
+   两者必须**同时切换**，否则中间态编译不过。
+2. **`onBleConnectionChanged()` 是新增函数**（原 `ServerHandler::onConnect` 里的两件事搬到了 `app.cpp`）。
+   理由：那两件事分属底层（`power_mgmt_note_activity`）与协议层（电量上报），
+   只有应用层有资格同时认识两者，正好体现"经应用层协调"。
+3. **`updateBatteryService()` 删除**，其"仅连接时 notify"的判断并入 `ble_transport_update_battery(pct)`。
+   理由：函数原先三合一（读全局电量 + 写特征 + 上报），拆分后电量改由调用方传入。
+
+**另有一处必要的行为等价调整**：`ble_transport.cpp` 里的共享发送缓冲
+`audio_packet_buffer` 由 **163 B**（`OPUS_OUTPUT_MAX_BYTES + 3`）扩到 **169 B**（`REPLAY_PACKET_MAX_BYTES`）。
+因为回传路径统一走同一个发送函数，而它的负载多 6 字节 BCD 时间戳
+（重构前回传自己另开了一个 169 B 的局部数组绕开，实时路径才用那 163 B）。已加长度上界判断防越界。
+
+### 逐位复现、**刻意未修**的既存缺陷
+
+`loop_app()` 顶部捕获的陈旧 `now` 被显式作为参数传进 `power_mgmt_idle_check(now, ...)`：
+短按按键后 `lastActivity` 会大于 `now`，`now - lastActivity` 在 `unsigned long` 下溢成极大值
+→ **立即进入省电模式**。这是重构前就存在的缺陷，本次按"零行为变更"原则逐位复现，
+`src/power_mgmt.cpp` 内有醒目注释说明，**未顺手修好**。修法待用户拍板。
+
+### 验证结果
+
+| 关卡 | 结果 |
+|---|---|
+| 编译 `seeed_xiao_esp32s3` | ✅ SUCCESS，**1 766 549 / 1 835 008 B = 96.3%**（余 68 459 B） |
+| 编译 `seeed_xiao_esp32s3_slow` | ✅ SUCCESS，但 **1 830 609 / 1 835 008 B = 99.79%**，⚠️ 仅余 **4 399 B** |
+| RAM | 122 456 / 327 680 B = 37.4%，**与重构前完全一致** |
+| 静态解耦核对 | ✅ 通过（见上"解耦证据"） |
+| **真机回归** | ❌ **未做** —— 检查时 `pio device list` 只有蓝牙虚拟串口（COM4/COM9），板子未枚举到 USB |
+
+### 没做 / 明确不改
+- **未改**任何算法：`mic` / `opus_encoder` / `mfcc` / `voiceprint` / `speaker_monitor` / `recorder` / `ogg_opus` / `ota`
+  一行未动 —— 满足"必须保留麦克风、蓝牙、声纹识别写入部分"与"保留 MFCC 及声纹相关全部代码"的要求。
+- **未删**只写不读的既存符号（`deviceActive` / `deviceState` / `buttonPressed` / `blinkLED`），原样保留。
+- **未动** `src/ota.cpp:38` 那个同名但从未实例化的 `OTAControlCallback` 类（现状无冲突）。
+- **未改** `platformio.ini`、`partitions_ota.csv`。
+- **未做**真机回归、未做 SD 卡相关链路验证（板子未连 + SD 硬件本就未修好）。
+
+### 隐患 / 需要用户拍板
+
+1. **🔴 `_slow` 调试环境只剩 4 399 B**。该环境（`CORE_DEBUG_LEVEL=5`）后续几乎不能再加任何代码。
+   若要在该环境下继续开发，需先处理 Flash 分区（`partitions_ota.csv` 只切了 4 MB，8 MB 芯片尾部 4 MB 未分配）。
+2. **🟡 重构版尚未真机验收**。回调接线漏接一个**不会编译报错**（因为走的是函数指针，空指针只是静默不响应）。
+   烧录后请按 `Overview.md` 待解决问题 11 的清单逐项验；**验完之前不应视为已交付**。
+3. **🟡 未对时/未修模板等既有问题依然存在**，本次未触碰。
+4. **`WorkFlow_Files/Request.md` 原先为空**，我已把本次需求要点补记进去（带"由 Claude 补记"标注）。
+   若你本来打算用它记别的需求，直接覆盖即可 —— 该文件无历史内容被删。
+
+
 
