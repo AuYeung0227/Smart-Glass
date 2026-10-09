@@ -6,34 +6,26 @@
 #include <BLEScan.h>
 #include <BLEUtils.h>
 
+#include "battery.h"      // 电池采集（底层）：battery_init / battery_read / battery_percentage
 #include "config.h" // Use config.h for all configurations
-#include "esp_sleep.h"
 #include "mic.h"
 #include "ogg_opus.h"
 #include "opus_encoder.h"
 #include "ota.h"
+#include "power_mgmt.h"   // 按键 / LED / 电源 / 深睡（底层）
 #include "recorder.h"
 #include "speaker_monitor.h"
 #include <FS.h>
 #include <SD.h>
 
-// Battery state
-float batteryVoltage = 0.0f;
-int batteryPercentage = 0;
-unsigned long lastBatteryCheck = 0;
-
 // Device power state
-bool deviceActive = true;
-device_state_t deviceState = DEVICE_BOOTING;
+// 备注：deviceActive 目前只写不读、deviceState 只写不读（既有状态），
+//       按「用户没让改的一律不改」原则原样保留在本文件。
+bool deviceActive = true;                      // 设备是否处于活动状态（无外部引用）
+device_state_t deviceState = DEVICE_BOOTING;   // 设备电源状态（setup_app 里置为 ACTIVE）
 
-// Button and LED state
-volatile bool buttonPressed = false;
-unsigned long buttonPressTime = 0;
-led_status_t ledMode = LED_BOOT_SEQUENCE;
-
-// Gentle power optimization
-unsigned long lastActivity = 0;
-bool powerSaveMode = false;
+// 电池检查节拍：loop_app() 用它决定多久读一次电量
+unsigned long lastBatteryCheck = 0;
 
 // ---------------------------------------------------------------------------------
 // BLE - Using config.h definitions
@@ -82,15 +74,7 @@ static volatile size_t audio_tx_read_pos = 0;
 static uint8_t audio_packet_buffer[OPUS_OUTPUT_MAX_BYTES + AUDIO_PACKET_HEADER_SIZE];
 
 // Forward declarations
-void readBatteryLevel();
-void updateBatteryService();
-void IRAM_ATTR buttonISR();
-void handleButton();
-void updateLED();
-void blinkLED(int count, int delayMs);
-void enterPowerSave();
-void exitPowerSave();
-void shutdownDevice();
+void updateBatteryService(); // 电量上报（仍在 app.cpp，待步骤2 移交 ble_transport）
 
 // Audio forward declarations
 void onMicData(int16_t *data, size_t samples);
@@ -99,191 +83,6 @@ void onMicRecord(int16_t *data, size_t samples);
 void onOpusEncoded(uint8_t *data, size_t len);
 void processAudioTx();
 void broadcastAudioPacket(uint8_t *data, size_t len);
-
-// -------------------------------------------------------------------------
-// Button ISR
-// -------------------------------------------------------------------------
-void IRAM_ATTR buttonISR()
-{
-    buttonPressed = true;
-}
-
-// -------------------------------------------------------------------------
-// LED Functions
-// -------------------------------------------------------------------------
-void updateLED()
-{
-#if VOICEPRINT_ENABLE
-    // GPIO21 与扩展板 SD 片选共用。启用录音模块后，该引脚归 SD 独占，
-    // 固件不再驱动 LED。
-    //
-    // 关键教训：早期版本只在「SD 已挂载」时才停止驱动 GPIO21。结果在
-    // 恰好「未有卡/挂载失败」的情况下，本函数会把 CS 拉低、并每 1 秒翻转一次，
-    // SD 卡收不到合法的复位时序（CMD0 失败），于是永远挂不上卡、也无法重试。
-    // 代价：本构建没有状态 LED。
-    return;
-#endif
-
-    // GPIO21 doubles as the expansion board's SD chip select. Once the card is
-    // mounted, driving this pin would corrupt SD transactions, so the status LED
-    // goes dark for good - the accepted cost of using the SD slot.
-    if (recorder_sd_ok()) {
-        return;
-    }
-
-    unsigned long now = millis();
-    static unsigned long bootStartTime = 0;
-    static unsigned long powerOffStartTime = 0;
-
-    switch (ledMode) {
-    case LED_BOOT_SEQUENCE:
-        if (bootStartTime == 0)
-            bootStartTime = now;
-
-        // 5 quick blinks over 1.5 seconds total (inverted logic: HIGH=OFF, LOW=ON)
-        if (now - bootStartTime < 1500) {
-            int blinkPhase = ((now - bootStartTime) / 150) % 2;
-            digitalWrite(STATUS_LED_PIN, !blinkPhase);
-        } else {
-            digitalWrite(STATUS_LED_PIN, HIGH); // OFF
-            ledMode = LED_NORMAL_OPERATION;
-            bootStartTime = 0;
-        }
-        break;
-
-    case LED_POWER_OFF_SEQUENCE:
-        if (powerOffStartTime == 0)
-            powerOffStartTime = now;
-
-        // 2 quick blinks over 800ms total (inverted logic: HIGH=OFF, LOW=ON)
-        if (now - powerOffStartTime < 800) {
-            int blinkPhase = ((now - powerOffStartTime) / 200) % 2;
-            digitalWrite(STATUS_LED_PIN, !blinkPhase);
-        } else {
-            digitalWrite(STATUS_LED_PIN, HIGH); // OFF
-            delay(100);
-            shutdownDevice();
-        }
-        break;
-
-    case LED_NORMAL_OPERATION:
-    default:
-        if (connected) {
-            // Connected - LED solid ON
-            digitalWrite(STATUS_LED_PIN, LOW);
-        } else {
-            // Disconnected - LED slow blink (1 sec on, 1 sec off)
-            int blinkPhase = (now / 1000) % 2;
-            digitalWrite(STATUS_LED_PIN, blinkPhase ? HIGH : LOW);
-        }
-        break;
-    }
-}
-
-void blinkLED(int count, int delayMs)
-{
-    for (int i = 0; i < count; i++) {
-        digitalWrite(STATUS_LED_PIN, HIGH);
-        delay(delayMs);
-        digitalWrite(STATUS_LED_PIN, LOW);
-        delay(delayMs);
-    }
-}
-
-// -------------------------------------------------------------------------
-// Button Handling
-// -------------------------------------------------------------------------
-void handleButton()
-{
-    unsigned long now = millis();
-    static unsigned long lastDebounceTime = 0;
-    static bool buttonDown = false;
-    static bool longPressTriggered = false;
-
-    bool currentButtonState = !digitalRead(POWER_BUTTON_PIN); // Active low (pressed = true)
-
-    if (currentButtonState && !buttonDown) {
-        // Button just pressed - debounce
-        if (now - lastDebounceTime < 50) {
-            return;
-        }
-        buttonPressTime = now;
-        buttonDown = true;
-        longPressTriggered = false;
-        lastDebounceTime = now;
-
-    } else if (currentButtonState && buttonDown && !longPressTriggered) {
-        // Button still held - check for long press
-        unsigned long pressDuration = now - buttonPressTime;
-        if (pressDuration >= 2000) {
-            // Long press threshold reached - trigger power off immediately
-            longPressTriggered = true;
-            ledMode = LED_POWER_OFF_SEQUENCE;
-        }
-
-    } else if (!currentButtonState && buttonDown) {
-        // Button just released - debounce
-        if (now - lastDebounceTime < 50) {
-            return;
-        }
-        buttonDown = false;
-        unsigned long pressDuration = now - buttonPressTime;
-        lastDebounceTime = now;
-
-        // Only handle short press if long press wasn't already triggered
-        if (!longPressTriggered && pressDuration >= 50) {
-            // Short press - register activity
-            lastActivity = now;
-            if (powerSaveMode) {
-                exitPowerSave();
-            }
-        }
-        longPressTriggered = false;
-    }
-
-    buttonPressed = false;
-}
-
-// -------------------------------------------------------------------------
-// Power Management
-// -------------------------------------------------------------------------
-void enterPowerSave()
-{
-    if (!powerSaveMode) {
-        setCpuFrequencyMhz(MIN_CPU_FREQ_MHZ); // 40MHz for idle
-        powerSaveMode = true;
-    }
-}
-
-void exitPowerSave()
-{
-    if (powerSaveMode) {
-        setCpuFrequencyMhz(NORMAL_CPU_FREQ_MHZ); // Back to 80MHz
-        powerSaveMode = false;
-    }
-}
-
-void shutdownDevice()
-{
-    Serial.println("Shutting down device...");
-
-    // Stop audio
-    mic_stop();
-
-    // Disconnect BLE gracefully
-    if (connected) {
-        Serial.println("Disconnecting BLE...");
-    }
-
-    // Turn off LED (inverted logic)
-    digitalWrite(STATUS_LED_PIN, HIGH);
-
-    // Enter deep sleep
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_1, 0); // Wake on button press
-    Serial.println("Entering deep sleep...");
-    delay(100);
-    esp_deep_sleep_start();
-}
 
 // -------------------------------------------------------------------------
 // Audio Functions
@@ -815,7 +614,7 @@ class ServerHandler : public BLEServerCallbacks
     {
         connected = true;
         audioSubscribed = false;
-        lastActivity = millis(); // Register activity - prevents sleep
+        power_mgmt_note_activity(); // ≡ 原 `lastActivity = millis()`，实现已搬到 src/power_mgmt.cpp
         Serial.println(">>> BLE Client connected.");
         // Send current battery level on connect
         updateBatteryService();
@@ -892,72 +691,13 @@ class OTAControlCallback : public BLECharacteristicCallbacks
 // -------------------------------------------------------------------------
 // Battery Functions
 // -------------------------------------------------------------------------
-void readBatteryLevel()
-{
-    // Take multiple ADC readings for stability
-    int adcSum = 0;
-    for (int i = 0; i < 10; i++) {
-        int value = analogRead(BATTERY_ADC_PIN);
-        adcSum += value;
-        delay(10);
-    }
-    int adcValue = adcSum / 10;
-
-    // ESP32-S3 ADC: 12-bit (0-4095), reference voltage ~3.3V
-    float adcVoltage = (adcValue / 4095.0f) * 3.3f;
-
-    // Apply voltage divider ratio to get actual battery voltage
-    batteryVoltage = adcVoltage * VOLTAGE_DIVIDER_RATIO;
-
-    // Clamp voltage to reasonable range
-    if (batteryVoltage > 5.0f)
-        batteryVoltage = 5.0f;
-    if (batteryVoltage < 2.5f)
-        batteryVoltage = 2.5f;
-
-    // Load-compensated battery calculation (accounts for voltage sag under load)
-    float loadCompensatedMax = BATTERY_MAX_VOLTAGE;
-    float loadCompensatedMin = BATTERY_MIN_VOLTAGE;
-
-    // More accurate percentage calculation for load conditions
-    if (batteryVoltage >= loadCompensatedMax) {
-        batteryPercentage = 100;
-    } else if (batteryVoltage <= loadCompensatedMin) {
-        batteryPercentage = 0;
-    } else {
-        float range = loadCompensatedMax - loadCompensatedMin;
-        batteryPercentage = (int) (((batteryVoltage - loadCompensatedMin) / range) * 100.0f);
-    }
-
-    // Smooth percentage changes to avoid jumpy readings
-    static int lastBatteryPercentage = batteryPercentage;
-    if (abs(batteryPercentage - lastBatteryPercentage) > 5) {
-        batteryPercentage = lastBatteryPercentage + (batteryPercentage > lastBatteryPercentage ? 2 : -2);
-    }
-    lastBatteryPercentage = batteryPercentage;
-
-    // Clamp percentage
-    if (batteryPercentage > 100)
-        batteryPercentage = 100;
-    if (batteryPercentage < 0)
-        batteryPercentage = 0;
-
-    // Battery status with load info
-    Serial.print("Battery: ");
-    Serial.print(batteryVoltage);
-    Serial.print("V (");
-    Serial.print(batteryPercentage);
-    Serial.print("%) [Load-compensated: ");
-    Serial.print(loadCompensatedMin);
-    Serial.print("V-");
-    Serial.print(loadCompensatedMax);
-    Serial.println("V]");
-}
+// 备注：原 readBatteryLevel() 已按分层搬到 src/battery.cpp（对外名 battery_read()）。
+//       本文件不再自己采 ADC，只通过 battery_percentage() 取值后上报。
 
 void updateBatteryService()
 {
     if (batteryLevelCharacteristic) {
-        uint8_t batteryLevel = (uint8_t) batteryPercentage;
+        uint8_t batteryLevel = (uint8_t) battery_percentage(); // 从 battery 模块取当前百分比
         batteryLevelCharacteristic->setValue(&batteryLevel, 1);
 
         if (connected) {
@@ -1012,8 +752,11 @@ void configure_ble()
     batteryLevelCharacteristic->addDescriptor(batteryCcc);
 
     // Set initial battery level
-    readBatteryLevel();
-    uint8_t initialBatteryLevel = (uint8_t) batteryPercentage;
+    // ⚠️ 注意次序：这里读电量时，ADC 的显式配置（battery_init()）还没执行 ——
+    //    原重构前的代码就是这个次序（configure_ble() 内部先读，之后才 analogReadResolution），
+    //    属纯搬迁，保持逐位一致。
+    battery_read();
+    uint8_t initialBatteryLevel = (uint8_t) battery_percentage();
     batteryLevelCharacteristic->setValue(&initialBatteryLevel, 1);
 
     // Device Information Service
@@ -1084,31 +827,17 @@ void setup_app()
     Serial.begin(115200);
     Serial.println("Setup started...");
 
-    // Initialize GPIO
-    pinMode(POWER_BUTTON_PIN, INPUT_PULLUP);
-    pinMode(STATUS_LED_PIN, OUTPUT);
-
-    // LED uses inverted logic: HIGH = OFF, LOW = ON
-    digitalWrite(STATUS_LED_PIN, HIGH);
-
-    // Setup button interrupt
-    attachInterrupt(digitalPinToInterrupt(POWER_BUTTON_PIN), buttonISR, CHANGE);
-
-    // Start LED boot sequence
-    ledMode = LED_BOOT_SEQUENCE;
-
-    // Power optimization from config.h
-    setCpuFrequencyMhz(NORMAL_CPU_FREQ_MHZ);
-    lastActivity = millis();
+    // 初始化电源管理：GPIO、按键中断、LED 初值、CPU 频率、活动时间戳
+    // （逐行等价于原 app.cpp:1088-1102，实现已搬到 src/power_mgmt.cpp）
+    power_mgmt_init();
 
     configure_ble();
 
     // Initial battery reading
     // Battery voltage divider
-    analogReadResolution(12);                           // optional: set 12-bit resolution
-    analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db); // set attenuation for full 3.3V range
+    battery_init(); // ≡ 原 analogReadResolution(12) + analogSetPinAttenuation(BATTERY_ADC_PIN, ADC_11db)
 
-    readBatteryLevel();
+    battery_read(); // ≡ 原 readBatteryLevel()
     deviceState = DEVICE_ACTIVE;
 
     // Initialize audio subsystem
@@ -1156,11 +885,10 @@ void loop_app()
 {
     unsigned long now = millis();
 
-    // Handle button presses
-    handleButton();
-
-    // Update LED
-    updateLED();
+    // Handle button presses + Update LED
+    // （≡ 原 loop_app() 里先后调用的 handleButton() 与 updateLED()，已搬到 src/power_mgmt.cpp。
+    //   connected / recorder_sd_ok() 由应用层读出后作为参数传入 —— 底层不得反向查询。）
+    power_mgmt_poll(connected, recorder_sd_ok());
 
     // Process OTA updates
     ota_loop();
@@ -1186,17 +914,15 @@ void loop_app()
     }
 
     // Check for power save mode (gentle optimization)
-    if (!connected && (now - lastActivity > IDLE_THRESHOLD_MS)) {
-        enterPowerSave();
-    } else if (connected) {
-        if (powerSaveMode)
-            exitPowerSave();
-        lastActivity = now;
-    }
+    // ⚠️ 传入的是循环顶部那个「陈旧的 now」，不是重新取时间：
+    //    原代码正是用它去算 now - lastActivity 的（短按后 lastActivity 会大于 now
+    //    → unsigned long 下溢 → 立即省电）。这是既存缺陷，纯搬迁必须逐位复现。
+    //    详见 src/power_mgmt.cpp 中 power_mgmt_idle_check() 的注释。
+    power_mgmt_idle_check(now, connected);
 
     // Check battery level periodically
     if (now - lastBatteryCheck >= BATTERY_TASK_INTERVAL_MS) {
-        readBatteryLevel();
+        battery_read();           // ≡ 原 readBatteryLevel()（已搬到 src/battery.cpp）
         updateBatteryService();
         lastBatteryCheck = now;
     }
@@ -1204,7 +930,7 @@ void loop_app()
     // Force battery update on first connection
     static bool firstBatteryUpdate = true;
     if (connected && firstBatteryUpdate) {
-        readBatteryLevel();
+        battery_read();           // ≡ 原 readBatteryLevel()
         updateBatteryService();
         firstBatteryUpdate = false;
     }
